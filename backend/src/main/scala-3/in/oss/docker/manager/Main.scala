@@ -7,6 +7,7 @@ import in.oss.docker.manager.controller.DockerController
 import org.http4s.ember.server.EmberServerBuilder
 import pureconfig.ConfigSource
 import in.oss.docker.manager.config.Syntax.*
+import org.http4s.server.middleware.CORS
 
 object Main extends IOApp.Simple {
 
@@ -18,7 +19,7 @@ object Main extends IOApp.Simple {
           .default[IO]
           .withHost(emberServerConfig.host)
           .withPort(emberServerConfig.port)
-          .withHttpApp(DockerController[IO]().routes)
+          .withHttpApp(CORS.policy(DockerController[IO]().routes))
           .build
           .use(_ => IO.println("Docker Manager started...") *> IO.never)
       }
