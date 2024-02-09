@@ -27,20 +27,30 @@ object AppGUI extends TyrianApp[Message, Model] {
 
   override def view(model: Model): Html[Message] = {
     div(
-      h1("Containers"),
-      div(
-        model.containers.map { container =>
-          div(
-            div(label("==========================")),
-            div(strong("Container ID: "), label(container.containerId.value)),
-            div(strong("Command: "), label(container.command.value)),
-            div(strong("Image: "), label(container.image.value)),
-            div(strong("Ports: "), label(container.ports.value)),
-            div(strong("Created: "), label(container.created.value)),
-            div(strong("Names: "), label(container.names.value)),
-            div(strong("Status: "), label(container.status.value))
+      table(`class` := "table")(
+        thead(
+          tr(
+            th("Container ID"),
+            th("Command"),
+            th("Image"),
+            th("Ports"),
+            th("Created"),
+            th("Names"),
+            th("Status")
           )
-        }
+        ),
+        tbody(
+          for (container <- model.containers)
+            yield tr(
+              td(`class` := "align-middle")(container.containerId.value),
+              td(`class` := "align-middle")(container.command.value),
+              td(`class` := "align-middle")(container.image.value),
+              td(`class` := "align-middle")(container.ports.value),
+              td(`class` := "align-middle")(container.created.value),
+              td(`class` := "align-middle")(container.names.value),
+              td(`class` := "align-middle")(container.status.value)
+            )
+        )
       )
     )
   }
