@@ -26,30 +26,35 @@ object AppGUI extends TyrianApp[Message, Model] {
     (Model(List()), getContainersEndpoint)
 
   override def view(model: Model): Html[Message] = {
-    div(
-      table(`class` := "table")(
-        thead(
-          tr(
-            th("Container ID"),
-            th("Command"),
-            th("Image"),
-            th("Ports"),
-            th("Created"),
-            th("Names"),
-            th("Status")
-          )
-        ),
-        tbody(
-          for (container <- model.containers)
-            yield tr(
-              td(`class` := "align-middle")(container.containerId.value),
-              td(`class` := "align-middle")(container.command.value),
-              td(`class` := "align-middle")(container.image.value),
-              td(`class` := "align-middle")(container.ports.value),
-              td(`class` := "align-middle")(container.created.value),
-              td(`class` := "align-middle")(container.names.value),
-              td(`class` := "align-middle")(container.status.value)
+    div(`class` := "container")(
+      div(`class` := "row justify-content-center")(
+        div(`class` := "col-14")(
+          div(`class` := "p-4")(h2("Containers list")),
+          table(`class` := "table")(
+            thead(
+              tr(
+                th("Container ID"),
+                th("Command"),
+                th("Image"),
+                th("Ports"),
+                th("Created"),
+                th("Names"),
+                th("Status")
+              )
+            ),
+            tbody(
+              for (container <- model.containers)
+                yield tr(
+                  td(`class` := "align-middle")(container.containerId.value),
+                  td(`class` := "align-middle")(container.command.value),
+                  td(`class` := "align-middle")(container.image.value),
+                  td(`class` := "align-middle")(container.ports.value),
+                  td(`class` := "align-middle")(container.created.value),
+                  td(`class` := "align-middle")(container.names.value),
+                  td(`class` := "align-middle")(container.status.value)
+                )
             )
+          )
         )
       )
     )
