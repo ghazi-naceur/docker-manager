@@ -14,15 +14,15 @@ case class Model(containers: List[Container])
 
 final case class ContainersPage(containers: List[Container] = List()) extends Page {
 
-  override def initCmd: Cmd[IO, Page.Msg] = getContainersEndpoint
+  override def initCmd: Cmd[IO, Page.Message] = getContainersEndpoint
 
-  override def update(msg: Page.Msg): (Page, Cmd[IO, Page.Msg]) = msg match {
+  override def update(message: Page.Message): (Page, Cmd[IO, Page.Message]) = message match {
     case ContainersPage.LoadContainers(cont) => (this.copy(containers = containers ++ cont), Cmd.None)
     case ContainersPage.NoOp                 => (this, Cmd.None)
     case ContainersPage.Error(error)         => (this, Cmd.None)
   }
 
-  override def view(): Html[Page.Msg] = {
+  override def view(): Html[Page.Message] = {
     div(`class` := "container")(
       div(`class` := "row justify-content-center")(
         div(`class` := "col-14")(
@@ -71,7 +71,7 @@ final case class ContainersPage(containers: List[Container] = List()) extends Pa
 }
 
 object ContainersPage {
-  trait Message extends pages.Page.Msg
+  trait Message extends pages.Page.Message
 
   case object NoOp extends Message
 

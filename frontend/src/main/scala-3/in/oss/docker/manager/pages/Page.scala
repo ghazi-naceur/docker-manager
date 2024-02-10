@@ -2,15 +2,16 @@ package in.oss.docker.manager.pages
 
 import tyrian.*
 import cats.effect.*
-import in.oss.docker.manager.pages.Page.Msg
+import in.oss.docker.manager.AppGUI
+import in.oss.docker.manager.pages.Page.Message
 
 abstract class Page {
-  def initCmd: Cmd[IO, Msg]
-  def update(msg: Msg): (Page, Cmd[IO, Msg])
-  def view(): Html[Msg]
+  def initCmd: Cmd[IO, Message]
+  def update(message: Message): (Page, Cmd[IO, Message])
+  def view(): Html[Message]
 }
 object Page {
-  trait Msg
+  trait Message extends AppGUI.Message
 
   object Urls {
     val CONTAINERS = "/containers"

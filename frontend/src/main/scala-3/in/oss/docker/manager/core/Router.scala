@@ -3,10 +3,11 @@ package in.oss.docker.manager.core
 import cats.effect.IO
 import tyrian.Cmd
 import fs2.dom.History
+import in.oss.docker.manager.AppGUI
 import in.oss.docker.manager.core.Router.*
 
 case class Router private (location: String, history: History[IO, String]) {
-  def update(msg: Msg): (Router, Cmd[IO, Msg]) = msg match {
+  def update(message: Message): (Router, Cmd[IO, Message]) = message match {
     case ChangeLocation(newLocation, browserTriggered) =>
       if (location == newLocation) (this, Cmd.None)
       else {
@@ -27,9 +28,9 @@ case class Router private (location: String, history: History[IO, String]) {
 
 object Router {
 
-  trait Msg
-  case class ChangeLocation(location: String, browserTriggered: Boolean = false) extends Msg
-  case class ExternalRedirect(location: String)                                  extends Msg
+  trait Message                                                                  extends AppGUI.Message
+  case class ChangeLocation(location: String, browserTriggered: Boolean = false) extends Message
+  case class ExternalRedirect(location: String)                                  extends Message
 
   def startAt[M](initialLocation: String): (Router, Cmd[IO, M]) =
     val router = Router(initialLocation, History[IO, String])

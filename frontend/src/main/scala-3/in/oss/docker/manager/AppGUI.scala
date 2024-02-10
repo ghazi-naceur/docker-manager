@@ -1,8 +1,8 @@
 package in.oss.docker.manager
 
 import cats.effect.*
+import in.oss.docker.manager.AppGUI.{Model, Message}
 import in.oss.docker.manager.core.Router
-import in.oss.docker.manager.core.Router.Msg
 import in.oss.docker.manager.pages.Page
 import io.circe.generic.auto.*
 import org.scalajs.dom.window
@@ -13,11 +13,10 @@ import tyrian.{Cmd, Html, Sub, TyrianApp}
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSExportTopLevel
 
-case class Model(router: Router, page: Page)
 @JSExportTopLevel("DockerManagerGUI")
-class AppGUI extends TyrianApp[AppGUI.Msg, Model] {
+class AppGUI extends TyrianApp[Message, Model] {
 
-  override def init(flags: Map[String, String]): (Model, Cmd[IO, AppGUI.Msg]) = {
+  override def init(flags: Map[String, String]): (Model, Cmd[IO, Message]) = {
     val location            = window.location.pathname
     val page                = Page.get(location)
     val pageCmd             = page.initCmd
@@ -25,9 +24,9 @@ class AppGUI extends TyrianApp[AppGUI.Msg, Model] {
     (Model(router, page), routerCmd |+| pageCmd)
   }
 
-  override def update(model: Model): AppGUI.Msg => (Model, Cmd[IO, AppGUI.Msg]) = {
-    case msg: Router.Msg =>
-      val (newRouter, routerCmd) = model.router.update(msg)
+  override def update(model: Model): Message => (Model, Cmd[IO, Message]) = {
+    case message: Router.Message =>
+      val (newRouter, routerCmd) = model.router.update(message)
       if (model.router == newRouter) (model, Cmd.None)
       else {
         val newPage    = Page.get(newRouter.location)
@@ -35,12 +34,12 @@ class AppGUI extends TyrianApp[AppGUI.Msg, Model] {
         (model.copy(router = newRouter, page = newPage), routerCmd |+| newPageCmd)
       }
 
-    case msg: Page.Msg =>
-      val (newPage, command) = model.page.update(msg)
+    case message: Page.Message =>
+      val (newPage, command) = model.page.update(message)
       (model.copy(page = newPage), command)
   }
 
-  override def view(model: Model): Html[AppGUI.Msg] = {
+  override def view(model: Model): Html[Message] = {
     div(
       renderNavLink("Containers", "/containers"),
       renderNavLink("Images", "/images"),
@@ -48,7 +47,7 @@ class AppGUI extends TyrianApp[AppGUI.Msg, Model] {
     )
   }
 
-  override def subscriptions(model: Model): Sub[IO, Msg] = {
+  override def subscriptions(model: Model): Sub[IO, Message] = {
     Sub.make(
       "urlChange",
       model.router.history.state.discrete
@@ -73,5 +72,6 @@ class AppGUI extends TyrianApp[AppGUI.Msg, Model] {
 }
 
 object AppGUI {
-  type Msg = Router.Msg | Page.Msg
+  trait Message
+  case class Model(router: Router, page: Page)
 }
