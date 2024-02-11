@@ -21,37 +21,33 @@ final case class ContainersPage(backendHost: String, containers: List[Container]
   }
 
   override def view(): Html[Page.Message] = {
-    div(`class` := "container")(
-      div(`class` := "row justify-content-center")(
-        div(`class` := "col-14")(
-          div(`class` := "p-4")(h2("Containers list")),
-          table(`class` := "table")(
-            thead(
-              tr(
-                th("Container ID"),
-                th("Image"),
-                th("Command"),
-                th("Created"),
-                th("Status"),
-                th("Ports"),
-                th("Names"),
-                th("Size")
-              )
-            ),
-            tbody(
-              for (container <- containers)
-                yield tr(
-                  td(`class` := "align-middle")(container.containerId.value),
-                  td(`class` := "align-middle")(container.imageName.value),
-                  td(`class` := "align-middle")(container.command.value),
-                  td(`class` := "align-middle")(container.created.value),
-                  td(`class` := "align-middle")(container.status.value),
-                  td(`class` := "align-middle")(container.ports.value),
-                  td(`class` := "align-middle")(container.names.value),
-                  td(`class` := "align-middle")(container.size.value)
-                )
-            )
+    div(`class` := "col-md-11")(
+      div(h2("Containers list")),
+      table(`class` := "table")(
+        thead(
+          tr(
+            th("Container ID"),
+            th("Image"),
+            th("Command"),
+            th("Created"),
+            th("Status"),
+            th("Ports"),
+            th("Names"),
+            th("Size")
           )
+        ),
+        tbody(
+          for (container <- containers)
+            yield tr(
+              td(`class` := "align-middle")(container.containerId.value),
+              td(`class` := "align-middle")(container.imageName.value),
+              td(`class` := "align-middle")(container.command.value),
+              td(`class` := "align-middle")(container.created.value),
+              td(`class` := "align-middle")(container.status.value),
+              td(`class` := "align-middle")(container.ports.value),
+              td(`class` := "align-middle")(container.names.value),
+              td(`class` := "align-middle")(container.size.value)
+            )
         )
       )
     )

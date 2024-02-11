@@ -40,10 +40,16 @@ class AppGUI extends TyrianApp[Message, Model] {
   }
 
   override def view(model: Model): Html[Message] = {
-    div(
-      renderNavLink("Containers", "/containers"),
-      renderNavLink("Images", "/images"),
-      model.page.view()
+    div(cls := "container-fluid full-width-row")(
+      div(`class` := "row full-width-row")(
+        div(`class` := "col-md-2 full-width-row")(
+          renderNavLink("Containers", "/containers"),
+          renderNavLink("Images", "/images")
+        ),
+        div(`class` := "col-md-10 full-width-row")(
+          model.page.view()
+        )
+      )
     )
   }
 
@@ -57,17 +63,19 @@ class AppGUI extends TyrianApp[Message, Model] {
   }
 
   private def renderNavLink(text: String, location: String) = {
-    a(
-      href    := location,
-      `class` := "nav-link",
-      onEvent(
-        "click",
-        e => {
-          e.preventDefault()
-          Router.ChangeLocation(location)
-        }
-      )
-    )(text)
+    div(cls := "p-3")(
+      a(
+        href    := location,
+        `class` := "nav-link",
+        onEvent(
+          "click",
+          e => {
+            e.preventDefault()
+            Router.ChangeLocation(location)
+          }
+        )
+      )(text)
+    )
   }
 }
 

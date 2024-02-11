@@ -1,0 +1,18 @@
+.html {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.full-width-row {
+  height: 100vh;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: unset;
+}

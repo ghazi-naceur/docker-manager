@@ -22,31 +22,27 @@ final case class ImagesPage(backendHost: String, images: List[Image] = List()) e
   }
 
   override def view(): Html[Page.Message] = {
-    div(`class` := "container")(
-      div(`class` := "row justify-content-center")(
-        div(`class` := "col-14")(
-          div(`class` := "p-4")(h2("Images list")),
-          table(`class` := "table")(
-            thead(
-              tr(
-                th("Repository"),
-                th("Tag"),
-                th("Image ID"),
-                th("Created"),
-                th("Size")
-              )
-            ),
-            tbody(
-              for (image <- images)
-                yield tr(
-                  td(`class` := "align-middle")(image.repository.value),
-                  td(`class` := "align-middle")(image.tag.value),
-                  td(`class` := "align-middle")(image.imageId.value),
-                  td(`class` := "align-middle")(image.created.value),
-                  td(`class` := "align-middle")(image.size.value)
-                )
-            )
+    div(`class` := "col-md-8")(
+      div(h2("Images list")),
+      table(`class` := "table")(
+        thead(
+          tr(
+            th("Repository"),
+            th("Tag"),
+            th("Image ID"),
+            th("Created"),
+            th("Size")
           )
+        ),
+        tbody(
+          for (image <- images)
+            yield tr(
+              td(`class` := "align-middle")(image.repository.value),
+              td(`class` := "align-middle")(image.tag.value),
+              td(`class` := "align-middle")(image.imageId.value),
+              td(`class` := "align-middle")(image.created.value),
+              td(`class` := "align-middle")(image.size.value)
+            )
         )
       )
     )
