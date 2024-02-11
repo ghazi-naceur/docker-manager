@@ -31,24 +31,26 @@ final case class ContainersPage(containers: List[Container] = List()) extends Pa
             thead(
               tr(
                 th("Container ID"),
-                th("Command"),
                 th("Image"),
-                th("Ports"),
+                th("Command"),
                 th("Created"),
+                th("Status"),
+                th("Ports"),
                 th("Names"),
-                th("Status")
+                th("Size"),
               )
             ),
             tbody(
               for (container <- containers)
                 yield tr(
                   td(`class` := "align-middle")(container.containerId.value),
-                  td(`class` := "align-middle")(container.command.value),
                   td(`class` := "align-middle")(container.image.value),
-                  td(`class` := "align-middle")(container.ports.value),
+                  td(`class` := "align-middle")(container.command.value),
                   td(`class` := "align-middle")(container.created.value),
+                  td(`class` := "align-middle")(container.status.value),
+                  td(`class` := "align-middle")(container.ports.value),
                   td(`class` := "align-middle")(container.names.value),
-                  td(`class` := "align-middle")(container.status.value)
+                  td(`class` := "align-middle")(container.size.value),
                 )
             )
           )

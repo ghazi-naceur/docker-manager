@@ -7,5 +7,6 @@ case class Container(
     created: CREATED,
     status: STATUS,
     ports: PORTS,
-    names: NAMES
+    names: NAMES,
+    size: SIZE
 )

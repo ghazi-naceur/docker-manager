@@ -6,5 +6,5 @@ object NAMES {
   def getIndex(terminalLogLine: String): Int = terminalLogLine.indexOf(fieldName)
 
   def apply(headerLogLine: String, terminalLogLine: String): NAMES =
-    NAMES(terminalLogLine.substring(getIndex(headerLogLine), terminalLogLine.length))
+    NAMES(terminalLogLine.substring(getIndex(headerLogLine), SIZE.getIndex(headerLogLine)).trim)
 }
