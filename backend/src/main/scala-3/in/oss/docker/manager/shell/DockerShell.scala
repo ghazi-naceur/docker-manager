@@ -6,8 +6,8 @@ import scala.sys.process.*
 
 object DockerShell {
   def getContainers: List[Container] = {
-    println("Executing command 'docker ps'...")
-    val commandOutput = Seq("docker", "ps").!!
+    println("Executing command 'docker ps -a'...")
+    val commandOutput = Seq("docker", "ps", "-a").!!
     val logLines      = commandOutput.split("\\n").toList
     val headerLogLine = logLines.head
     logLines.tail.map(line =>
