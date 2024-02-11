@@ -8,6 +8,6 @@ object Command {
 
   def getIndex(terminalLogLine: String): Int = terminalLogLine.indexOf(fieldName)
 
-  def apply(headerLogLine: String, terminalLogLine: String): Command =
-    Command(terminalLogLine.substring(getIndex(headerLogLine), Created.getIndex(headerLogLine)).trim)
+  def apply(headerLogLine: String, terminalLogLine: String, commandEndIndex: Int): Command =
+    Command(terminalLogLine.substring(getIndex(headerLogLine), commandEndIndex).trim)
 }

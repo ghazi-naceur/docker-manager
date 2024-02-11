@@ -1,7 +1,6 @@
 package in.oss.docker.manager
 
 import cats.effect.{IO, IOApp}
-import com.comcast.ip4s.{host, port}
 import in.oss.docker.manager.config.AppConfig
 import in.oss.docker.manager.controller.DockerController
 import org.http4s.ember.server.EmberServerBuilder

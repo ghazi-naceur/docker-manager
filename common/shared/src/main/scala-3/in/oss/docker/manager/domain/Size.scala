@@ -8,6 +8,6 @@ object Size {
 
   def getIndex(terminalLogLine: String): Int = terminalLogLine.indexOf(fieldName)
 
-  def apply(headerLogLine: String, terminalLogLine: String): Size =
-    Size(terminalLogLine.substring(getIndex(headerLogLine), terminalLogLine.length).trim)
+  def apply(headerLogLine: String, terminalLogLine: String, sizeEndIndex: Int): Size =
+    Size(terminalLogLine.substring(getIndex(headerLogLine), sizeEndIndex).trim)
 }

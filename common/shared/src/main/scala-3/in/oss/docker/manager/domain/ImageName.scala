@@ -8,6 +8,6 @@ object ImageName {
 
   def getIndex(terminalLogLine: String): Int = terminalLogLine.indexOf(fieldName)
 
-  def apply(headerLogLine: String, terminalLogLine: String): ImageName =
-    ImageName(terminalLogLine.substring(getIndex(headerLogLine), Command.getIndex(headerLogLine)).trim)
+  def apply(headerLogLine: String, terminalLogLine: String, imageNameEndIndex: Int): ImageName =
+    ImageName(terminalLogLine.substring(getIndex(headerLogLine), imageNameEndIndex).trim)
 }

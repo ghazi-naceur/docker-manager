@@ -7,6 +7,7 @@ object ContainerID {
   val fieldName = "CONTAINER ID"
 
   def getIndex(terminalLogLine: String): Int = terminalLogLine.indexOf(fieldName)
-  def apply(headerLogLine: String, terminalLogLine: String): ContainerID =
-    ContainerID(terminalLogLine.substring(getIndex(headerLogLine), ImageName.getIndex(headerLogLine)).trim)
+  
+  def apply(headerLogLine: String, terminalLogLine: String, containerIdEndIndex: Int): ContainerID =
+    ContainerID(terminalLogLine.substring(getIndex(headerLogLine), containerIdEndIndex).trim)
 }

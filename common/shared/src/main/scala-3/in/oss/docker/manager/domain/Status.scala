@@ -8,6 +8,6 @@ object Status {
 
   def getIndex(terminalLogLine: String): Int = terminalLogLine.indexOf(fieldName)
 
-  def apply(headerLogLine: String, terminalLogLine: String): Status =
-    Status(terminalLogLine.substring(getIndex(headerLogLine), Ports.getIndex(headerLogLine)).trim)
+  def apply(headerLogLine: String, terminalLogLine: String, statusEndIndex: Int): Status =
+    Status(terminalLogLine.substring(getIndex(headerLogLine), statusEndIndex).trim)
 }

@@ -8,6 +8,6 @@ object Ports {
 
   def getIndex(terminalLogLine: String): Int = terminalLogLine.indexOf(fieldName)
 
-  def apply(headerLogLine: String, terminalLogLine: String): Ports =
-    Ports(terminalLogLine.substring(getIndex(headerLogLine), Names.getIndex(headerLogLine)).trim)
+  def apply(headerLogLine: String, terminalLogLine: String, portsEndIndex: Int): Ports =
+    Ports(terminalLogLine.substring(getIndex(headerLogLine), portsEndIndex).trim)
 }
