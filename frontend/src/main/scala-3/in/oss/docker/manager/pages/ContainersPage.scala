@@ -10,8 +10,6 @@ import tyrian.*
 import tyrian.Html.*
 import tyrian.http.*
 
-case class Model(containers: List[Container])
-
 final case class ContainersPage(backendHost: String, containers: List[Container] = List()) extends Page {
 
   override def initCmd: Cmd[IO, Page.Message] = getContainersEndpoint
@@ -82,4 +80,6 @@ object ContainersPage {
   case class LoadContainers(containers: List[Container]) extends Message
 
   case class Error(error: String) extends Message
+
+  case class Model(containers: List[Container])
 }

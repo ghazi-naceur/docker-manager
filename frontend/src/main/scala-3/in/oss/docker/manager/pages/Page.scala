@@ -18,6 +18,7 @@ object Page {
 
   object Urls {
     val CONTAINERS = "/containers"
+    val IMAGES     = "/images"
     val HOME       = "/"
   }
 
@@ -29,6 +30,7 @@ object Page {
 
   def get(location: String): Page = location match {
     case CONTAINERS => ContainersPage(backendHost)
+    case IMAGES     => ImagesPage(backendHost)
     case _          => NotFoundPage()
   }
 }
