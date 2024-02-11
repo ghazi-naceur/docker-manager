@@ -1,7 +1,7 @@
 package in.oss.docker.manager
 
 import cats.effect.*
-import in.oss.docker.manager.AppGUI.{Model, Message}
+import in.oss.docker.manager.AppGUI.{Message, Model}
 import in.oss.docker.manager.core.Router
 import in.oss.docker.manager.pages.Page
 import io.circe.generic.auto.*

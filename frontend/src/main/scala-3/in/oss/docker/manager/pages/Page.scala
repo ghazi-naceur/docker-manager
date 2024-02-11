@@ -4,6 +4,9 @@ import tyrian.*
 import cats.effect.*
 import in.oss.docker.manager.AppGUI
 import in.oss.docker.manager.pages.Page.Message
+import org.scalajs.dom.window
+
+import scala.scalajs.LinkingInfo
 
 abstract class Page {
   def initCmd: Cmd[IO, Message]
@@ -20,8 +23,12 @@ object Page {
 
   import Urls.*
 
+  private val backendHost: String =
+    if (LinkingInfo.developmentMode) "http://localhost:6543"
+    else window.location.origin.get
+
   def get(location: String): Page = location match {
-    case CONTAINERS => ContainersPage()
+    case CONTAINERS => ContainersPage(backendHost)
     case _          => NotFoundPage()
   }
 }

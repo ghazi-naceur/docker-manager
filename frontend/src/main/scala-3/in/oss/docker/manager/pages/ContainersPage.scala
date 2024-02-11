@@ -12,7 +12,7 @@ import tyrian.http.*
 
 case class Model(containers: List[Container])
 
-final case class ContainersPage(containers: List[Container] = List()) extends Page {
+final case class ContainersPage(backendHost: String, containers: List[Container] = List()) extends Page {
 
   override def initCmd: Cmd[IO, Page.Message] = getContainersEndpoint
 
@@ -37,7 +37,7 @@ final case class ContainersPage(containers: List[Container] = List()) extends Pa
                 th("Status"),
                 th("Ports"),
                 th("Names"),
-                th("Size"),
+                th("Size")
               )
             ),
             tbody(
@@ -50,7 +50,7 @@ final case class ContainersPage(containers: List[Container] = List()) extends Pa
                   td(`class` := "align-middle")(container.status.value),
                   td(`class` := "align-middle")(container.ports.value),
                   td(`class` := "align-middle")(container.names.value),
-                  td(`class` := "align-middle")(container.size.value),
+                  td(`class` := "align-middle")(container.size.value)
                 )
             )
           )
@@ -59,17 +59,19 @@ final case class ContainersPage(containers: List[Container] = List()) extends Pa
     )
   }
 
-  private def getContainersEndpoint: Cmd[IO, Message] = Http.send(
-    Request.get("http://localhost:5555/docker/containers"),
-    Decoder[Message](
-      response =>
-        parse(response.body).flatMap(_.as[List[Container]]) match {
-          case Right(containers) => LoadContainers(containers)
-          case Left(thr)         => ContainersPage.Error(thr.getMessage)
-        },
-      error => ContainersPage.Error(error.toString)
+  private def getContainersEndpoint: Cmd[IO, Message] = {
+    Http.send(
+      Request.get(s"$backendHost/docker/containers"),
+      Decoder[Message](
+        response =>
+          parse(response.body).flatMap(_.as[List[Container]]) match {
+            case Right(containers) => LoadContainers(containers)
+            case Left(thr)         => ContainersPage.Error(thr.getMessage)
+          },
+        error => ContainersPage.Error(error.toString)
+      )
     )
-  )
+  }
 }
 
 object ContainersPage {

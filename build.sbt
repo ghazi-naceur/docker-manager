@@ -36,9 +36,9 @@ lazy val frontend = (project in file("frontend"))
     name         := "frontend",
     scalaVersion := scala3Version,
     libraryDependencies ++= Seq(
-      "io.indigoengine" %%% "tyrian-io"     % tyrianVersion,
-      "com.armanbilge"  %%% "fs2-dom"       % fs2DomVersion,
-      "org.planet42"    %%% "laika-core"    % laikaVersion
+      "io.indigoengine" %%% "tyrian-io"  % tyrianVersion,
+      "com.armanbilge"  %%% "fs2-dom"    % fs2DomVersion,
+      "org.planet42"    %%% "laika-core" % laikaVersion
     ),
     scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule) },
     semanticdbEnabled := true,
