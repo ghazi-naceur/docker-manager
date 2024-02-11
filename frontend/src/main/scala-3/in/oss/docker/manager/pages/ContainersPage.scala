@@ -44,7 +44,7 @@ final case class ContainersPage(containers: List[Container] = List()) extends Pa
               for (container <- containers)
                 yield tr(
                   td(`class` := "align-middle")(container.containerId.value),
-                  td(`class` := "align-middle")(container.image.value),
+                  td(`class` := "align-middle")(container.imageName.value),
                   td(`class` := "align-middle")(container.command.value),
                   td(`class` := "align-middle")(container.created.value),
                   td(`class` := "align-middle")(container.status.value),

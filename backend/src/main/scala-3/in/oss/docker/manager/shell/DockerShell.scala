@@ -12,14 +12,14 @@ object DockerShell {
     val headerLogLine = logLines.head
     logLines.tail.map(line =>
       Container(
-        CONTAINER_ID(headerLogLine, line),
-        IMAGE(headerLogLine, line),
-        COMMAND(headerLogLine, line),
-        CREATED(headerLogLine, line),
-        STATUS(headerLogLine, line),
-        PORTS(headerLogLine, line),
-        NAMES(headerLogLine, line),
-        SIZE(headerLogLine, line)
+        ContainerID(headerLogLine, line),
+        ImageName(headerLogLine, line),
+        Command(headerLogLine, line),
+        Created(headerLogLine, line),
+        Status(headerLogLine, line),
+        Ports(headerLogLine, line),
+        Names(headerLogLine, line),
+        Size(headerLogLine, line)
       )
     )
   }

@@ -1,12 +1,12 @@
 package in.oss.docker.manager.domain
 
 case class Container(
-    containerId: CONTAINER_ID,
-    image: IMAGE,
-    command: COMMAND,
-    created: CREATED,
-    status: STATUS,
-    ports: PORTS,
-    names: NAMES,
-    size: SIZE
+    containerId: ContainerID,
+    imageName: ImageName,
+    command: Command,
+    created: Created,
+    status: Status,
+    ports: Ports,
+    names: Names,
+    size: Size
 )
