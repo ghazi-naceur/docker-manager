@@ -87,7 +87,7 @@ object ImagesPage {
 
   case class Error(error: String) extends Message
 
-  case class GoToPage(page: Int) extends Message
+  case class GoToPage(pageNumber: Int) extends Message
 
   case class Model(images: List[Image])
 }
