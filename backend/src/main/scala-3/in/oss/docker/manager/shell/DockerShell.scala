@@ -7,7 +7,7 @@ import scala.sys.process.*
 object DockerShell {
 
   def getContainers: List[Container] = {
-    println("Executing command 'docker ps -a -s'...")
+    println("Listing docker containers: 'docker ps -a -s'...")
     val commandOutput = Seq("docker", "ps", "-a", "-s").!!
     val logLines      = commandOutput.split("\\n").toList
     val headerLogLine = logLines.head
@@ -26,7 +26,7 @@ object DockerShell {
   }
 
   def getImages: List[Image] = {
-    println("Executing command 'docker images -a'...")
+    println("Listing docker images: 'docker images -a'...")
     val commandOutput = Seq("docker", "images", "-a").!!
     val logLines      = commandOutput.split("\\n").toList
     val headerLogLine = logLines.head
@@ -39,5 +39,12 @@ object DockerShell {
         Size(headerLogLine, line, line.length)
       )
     )
+  }
+
+  def stopContainer(containerID: String): Either[String, Unit] = {
+    println(s"Stopping container: 'docker stop $containerID'...")
+    val commandOutput = Seq("docker", "stop", s"$containerID").!!
+    if (commandOutput.replace("\n", "") == containerID) Right(())
+    else Left(commandOutput)
   }
 }
