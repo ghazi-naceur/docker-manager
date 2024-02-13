@@ -10,3 +10,16 @@ case class Container(
     names: Names,
     size: Size
 )
+
+object Container {
+  val containerFields: List[String] = List(
+    ContainerID.fieldName,
+    ImageName.fieldName,
+    Command.fieldName,
+    Created.fieldName,
+    Status.fieldName,
+    Ports.fieldName,
+    Names.fieldName,
+    Size.fieldName
+  )
+}

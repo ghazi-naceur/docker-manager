@@ -15,14 +15,17 @@ import org.http4s.server.Router
 class DockerController[F[_]: Async] extends Http4sDsl[F] {
 
   val getDockerContainers: HttpRoutes[F] = HttpRoutes.of[F] { case GET -> Root / "containers" =>
-    Ok(DockerShell.getContainers)
+    DockerShell.getContainers match {
+      case Right(containers) => Ok(containers)
+      case Left(error)       => InternalServerError(error)
+    }
   }
 
   val getDockerImages: HttpRoutes[F] = HttpRoutes.of[F] { case GET -> Root / "images" =>
     Ok(DockerShell.getImages)
   }
 
-  val stopContainer: HttpRoutes[F] = HttpRoutes.of[F] { case PUT -> Root / "container" / containerID =>
+  val stopDockerContainer: HttpRoutes[F] = HttpRoutes.of[F] { case PUT -> Root / "container" / containerID =>
     DockerShell.stopContainer(containerID) match {
       case Right(_)    => Ok()
       case Left(error) => InternalServerError(error)
@@ -30,6 +33,6 @@ class DockerController[F[_]: Async] extends Http4sDsl[F] {
   }
 
   def routes: HttpApp[F] = Router(
-    "/docker" -> (getDockerContainers <+> getDockerImages <+> stopContainer)
+    "/docker" -> (getDockerContainers <+> getDockerImages <+> stopDockerContainer)
   ).orNotFound
 }
