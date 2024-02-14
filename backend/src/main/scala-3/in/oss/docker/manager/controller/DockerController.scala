@@ -12,27 +12,31 @@ import org.http4s.circe.CirceEntityCodec.*
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 
-class DockerController[F[_]: Async] extends Http4sDsl[F] {
+class DockerController[F[_]: Async](dockerShell: DockerShell[F]) extends Http4sDsl[F] {
 
   val getDockerContainers: HttpRoutes[F] = HttpRoutes.of[F] { case GET -> Root / "containers" =>
-    DockerShell.getContainers match {
-      case Right(containers) => Ok(containers)
-      case Left(error)       => InternalServerError(error)
-    }
+    dockerShell.getContainers
+      .flatMap(Ok(_))
+      .recoverWith { case thr =>
+        InternalServerError(thr.getMessage)
+      }
   }
 
   val getDockerImages: HttpRoutes[F] = HttpRoutes.of[F] { case GET -> Root / "images" =>
-    DockerShell.getImages match {
-      case Right(images) => Ok(images)
-      case Left(error)   => InternalServerError(error)
-    }
+    dockerShell.getImages
+      .flatMap(Ok(_))
+      .recoverWith { case thr =>
+        InternalServerError(thr.getMessage)
+      }
   }
 
   val stopDockerContainer: HttpRoutes[F] = HttpRoutes.of[F] { case PUT -> Root / "container" / containerID =>
-    DockerShell.stopContainer(containerID) match {
-      case Right(_)    => Ok()
-      case Left(error) => InternalServerError(error)
-    }
+    dockerShell
+      .stopContainer(containerID)
+      .flatMap(Ok(_))
+      .recoverWith { case thr =>
+        InternalServerError(thr.getMessage)
+      }
   }
 
   def routes: HttpApp[F] = Router(
