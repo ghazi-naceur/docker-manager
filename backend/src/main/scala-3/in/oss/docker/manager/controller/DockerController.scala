@@ -22,7 +22,10 @@ class DockerController[F[_]: Async] extends Http4sDsl[F] {
   }
 
   val getDockerImages: HttpRoutes[F] = HttpRoutes.of[F] { case GET -> Root / "images" =>
-    Ok(DockerShell.getImages)
+    DockerShell.getImages match {
+      case Right(images) => Ok(images)
+      case Left(error)   => InternalServerError(error)
+    }
   }
 
   val stopDockerContainer: HttpRoutes[F] = HttpRoutes.of[F] { case PUT -> Root / "container" / containerID =>

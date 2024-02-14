@@ -7,3 +7,13 @@ case class Image(
     created: Created,
     size: Size
 )
+
+object Image {
+  val imageFields: List[String] = List(
+    Repository.fieldName,
+    Tag.fieldName,
+    ImageID.fieldName,
+    Created.fieldName,
+    Size.fieldName
+  )
+}

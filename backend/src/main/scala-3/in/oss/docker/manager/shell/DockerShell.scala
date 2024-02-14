@@ -30,20 +30,25 @@ object DockerShell {
     else Left(commandOutput)
   }
 
-  def getImages: List[Image] = {
+  def getImages: Either[String, List[Image]] = {
     println("Listing docker images: 'docker images -a'...")
     val commandOutput = Seq("docker", "images", "-a").!!
     val logLines      = commandOutput.split("\\n").toList
     val headerLogLine = logLines.head
-    logLines.tail.map(line =>
-      Image(
-        Repository(headerLogLine, line, Tag.getIndex(headerLogLine)),
-        Tag(headerLogLine, line, ImageID.getIndex(headerLogLine)),
-        ImageID(headerLogLine, line, Created.getIndex(headerLogLine)),
-        Created(headerLogLine, line, Size.getIndex(headerLogLine)),
-        Size(headerLogLine, line, line.length)
-      )
-    )
+
+    if (checkFieldsExistence(headerLogLine, Image.imageFields))
+      logLines.tail
+        .map(line =>
+          Image(
+            Repository(headerLogLine, line, Tag.getIndex(headerLogLine)),
+            Tag(headerLogLine, line, ImageID.getIndex(headerLogLine)),
+            ImageID(headerLogLine, line, Created.getIndex(headerLogLine)),
+            Created(headerLogLine, line, Size.getIndex(headerLogLine)),
+            Size(headerLogLine, line, line.length)
+          )
+        )
+        .asRight
+    else Left(commandOutput)
   }
 
   def stopContainer(containerID: String): Either[String, Unit] = {
