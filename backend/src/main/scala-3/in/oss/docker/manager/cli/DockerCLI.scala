@@ -1,32 +1,33 @@
-package in.oss.docker.manager.shell
+package in.oss.docker.manager.cli
 
 import cats.effect.Async
 import in.oss.docker.manager.domain.*
 import cats.implicits.*
+import in.oss.docker.manager.errors.DockerShellError.{GetContainersError, GetImagesError, StopContainerError}
 import org.typelevel.log4cats.Logger
 
 import scala.sys.process.*
 
-trait DockerShell[F[_]] {
+trait DockerCLI[F[_]] {
   def getContainers: F[List[Container]]
   def getImages: F[List[Image]]
   def stopContainer(containerID: String): F[Unit]
 }
 
-object DockerShell {
+object DockerCLI {
 
-  def impl[F[_]: Logger: Async](): DockerShell[F] = new DockerShell[F] {
+  def impl[F[_]: Logger: Async](): DockerCLI[F] = new DockerCLI[F] {
 
     override def getContainers: F[List[Container]] =
       for {
-        _             <- Logger[F].info("Listing docker containers: 'docker ps -a -s'")
+        _             <- Logger[F].info("Listing all docker containers: 'docker ps -a -s'")
         commandOutput <- Async[F].delay(Seq("docker", "ps", "-a", "-s").!!)
         result        <- extractGetContainersResult(commandOutput)
       } yield result
 
     override def getImages: F[List[Image]] =
       for {
-        _             <- Logger[F].info("Listing docker images '$a:' 'docker images -a'")
+        _             <- Logger[F].info("Listing all docker images: 'docker images -a'")
         commandOutput <- Async[F].delay(Seq("docker", "images", "-a").!!)
         result        <- extractGetImagesResult(commandOutput)
       } yield result
@@ -39,7 +40,7 @@ object DockerShell {
       } yield result
   }
 
-  private def extractGetContainersResult[F[_]: Logger: Async](commandOutput: String) = {
+  def extractGetContainersResult[F[_]: Async](commandOutput: String): F[List[Container]] = {
     val logLines      = commandOutput.split("\\n").toList
     val headerLogLine = logLines.head
 
@@ -58,10 +59,10 @@ object DockerShell {
           )
         )
         .pure
-    else new Throwable(commandOutput).raiseError
+    else GetContainersError(headerLogLine, Container.containerFields).raiseError
   }
 
-  private def extractGetImagesResult[F[_]: Async](commandOutput: String) = {
+  def extractGetImagesResult[F[_]: Async](commandOutput: String): F[List[Image]] = {
     val logLines      = commandOutput.split("\\n").toList
     val headerLogLine = logLines.head
     if (checkFieldsExistence(headerLogLine, Image.imageFields))
@@ -76,12 +77,12 @@ object DockerShell {
           )
         )
         .pure
-    else new Throwable(commandOutput).raiseError
+    else GetImagesError(headerLogLine, Image.imageFields).raiseError
   }
 
-  private def extractStopContainerResult[F[_]: Async](containerID: String, commandOutput: String) = {
+  def extractStopContainerResult[F[_]: Async](containerID: String, commandOutput: String): F[Unit] = {
     if (commandOutput.replace("\n", "") == containerID) ().pure
-    else new Throwable(commandOutput).raiseError
+    else StopContainerError(containerID, commandOutput).raiseError
   }
 
   private def checkFieldsExistence(header: String, fields: List[String]): Boolean =

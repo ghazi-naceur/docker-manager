@@ -1,6 +1,6 @@
 package in.oss.docker.manager.domain
 
-case class Tag private (value: String)
+case class Tag(value: String)
 
 object Tag {
 

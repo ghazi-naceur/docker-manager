@@ -14,6 +14,7 @@ lazy val pureConfigVersion = "0.17.2"
 lazy val log4catsVersion   = "2.5.0"
 lazy val scalaTestVersion  = "3.2.15"
 lazy val slf4jVersion      = "2.0.5"
+lazy val weaverVersion     = "0.8.3"
 
 // Common module
 lazy val common = (crossProject(JSPlatform, JVMPlatform) in file("common"))
@@ -59,9 +60,11 @@ lazy val backend = (project in file("backend"))
       "com.github.pureconfig" %% "pureconfig-core"     % pureConfigVersion,
       "org.slf4j"              % "slf4j-simple"        % slf4jVersion,
       "org.typelevel"         %% "log4cats-slf4j"      % log4catsVersion,
-      "org.typelevel"         %% "log4cats-noop"       % log4catsVersion  % Test,
-      "org.scalatest"         %% "scalatest"           % scalaTestVersion % Test
+      "org.typelevel"         %% "log4cats-noop"       % log4catsVersion % Test,
+      "com.disneystreaming"   %% "weaver-cats"         % weaverVersion   % Test
     ),
     Compile / mainClass := Some("in.io.docker.manager.Main")
   )
   .dependsOn(common.jvm)
+
+testFrameworks += new TestFramework("weaver.framework.CatsEffect")

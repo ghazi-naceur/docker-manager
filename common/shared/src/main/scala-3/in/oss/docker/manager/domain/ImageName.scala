@@ -1,6 +1,6 @@
 package in.oss.docker.manager.domain
 
-case class ImageName private (value: String)
+case class ImageName(value: String)
 
 object ImageName {
 

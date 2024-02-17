@@ -1,6 +1,6 @@
 package in.oss.docker.manager.domain
 
-case class Created private (value: String)
+case class Created(value: String)
 
 object Created {
 

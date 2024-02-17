@@ -1,6 +1,6 @@
 package in.oss.docker.manager.domain
 
-case class Status private (value: String)
+case class Status(value: String)
 
 object Status {
 

@@ -1,6 +1,6 @@
 package in.oss.docker.manager.domain
 
-case class Repository private (value: String)
+case class Repository(value: String)
 
 object Repository {
 

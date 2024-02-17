@@ -1,6 +1,6 @@
 package in.oss.docker.manager.domain
 
-case class Command private (value: String)
+case class Command(value: String)
 
 object Command {
 

@@ -6,7 +6,7 @@ import in.oss.docker.manager.controller.DockerController
 import org.http4s.ember.server.EmberServerBuilder
 import pureconfig.ConfigSource
 import in.oss.docker.manager.config.Syntax.*
-import in.oss.docker.manager.shell.DockerShell
+import in.oss.docker.manager.cli.DockerCLI
 import org.http4s.server.middleware.CORS
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -19,7 +19,7 @@ object Main extends IOApp.Simple {
     ConfigSource.default
       .loadF[IO, AppConfig]
       .flatMap { case AppConfig(emberServerConfig) =>
-        val dockerShell = DockerShell.impl[IO]()
+        val dockerShell = DockerCLI.impl[IO]()
         EmberServerBuilder
           .default[IO]
           .withHost(emberServerConfig.host)

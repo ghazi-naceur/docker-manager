@@ -1,6 +1,6 @@
 package in.oss.docker.manager.domain
 
-case class Size private (value: String)
+case class Size(value: String)
 
 object Size {
 

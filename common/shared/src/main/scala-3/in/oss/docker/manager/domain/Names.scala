@@ -1,6 +1,6 @@
 package in.oss.docker.manager.domain
 
-case class Names private (value: String)
+case class Names(value: String)
 
 object Names {
 

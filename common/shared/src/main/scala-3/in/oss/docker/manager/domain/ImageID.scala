@@ -1,6 +1,6 @@
 package in.oss.docker.manager.domain
 
-case class ImageID private (value: String)
+case class ImageID(value: String)
 
 object ImageID {
 

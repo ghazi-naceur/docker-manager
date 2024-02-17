@@ -3,7 +3,7 @@ package in.oss.docker.manager.controller
 import cats.*
 import cats.effect.*
 import cats.implicits.*
-import in.oss.docker.manager.shell.DockerShell
+import in.oss.docker.manager.cli.DockerCLI
 import io.circe.*
 import io.circe.generic.auto.*
 import org.http4s.*
@@ -12,7 +12,7 @@ import org.http4s.circe.CirceEntityCodec.*
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 
-class DockerController[F[_]: Async](dockerShell: DockerShell[F]) extends Http4sDsl[F] {
+class DockerController[F[_]: Async](dockerShell: DockerCLI[F]) extends Http4sDsl[F] {
 
   val getDockerContainers: HttpRoutes[F] = HttpRoutes.of[F] { case GET -> Root / "containers" =>
     dockerShell.getContainers

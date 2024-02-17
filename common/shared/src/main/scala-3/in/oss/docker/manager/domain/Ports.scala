@@ -1,6 +1,6 @@
 package in.oss.docker.manager.domain
 
-case class Ports private (value: String)
+case class Ports(value: String)
 
 object Ports {
 
