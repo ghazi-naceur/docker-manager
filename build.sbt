@@ -13,7 +13,6 @@ lazy val http4sVersion     = "0.23.19"
 lazy val pureConfigVersion = "0.17.2"
 lazy val log4catsVersion   = "2.5.0"
 lazy val scalaTestVersion  = "3.2.15"
-lazy val logbackVersion    = "1.4.7"
 lazy val slf4jVersion      = "2.0.5"
 
 // Common module
@@ -61,7 +60,6 @@ lazy val backend = (project in file("backend"))
       "org.slf4j"              % "slf4j-simple"        % slf4jVersion,
       "org.typelevel"         %% "log4cats-slf4j"      % log4catsVersion,
       "org.typelevel"         %% "log4cats-noop"       % log4catsVersion  % Test,
-      "ch.qos.logback"         % "logback-classic"     % logbackVersion   % Test,
       "org.scalatest"         %% "scalatest"           % scalaTestVersion % Test
     ),
     Compile / mainClass := Some("in.io.docker.manager.Main")
