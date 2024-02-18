@@ -21,18 +21,19 @@ object DockerControllerSpec extends SimpleIOSuite {
 
   given logger: Logger[IO] = Slf4jLogger.getLogger[IO]
 
+  val container: Container = Container(
+    ContainerID("587e8f1c0dcb"),
+    ImageName("data-highway-app:v0.6-rc"),
+    Command("\"java -cp /app/jar/d…\""),
+    Created("4 days ago"),
+    domain.Status("Exited (143) 4 days ago"),
+    Ports(""),
+    Names("bungee-gum"),
+    Size("2.63kB (virtual 792MB)")
+  )
   val expectedContainers: List[Container] =
     List(
-      Container(
-        ContainerID("587e8f1c0dcb"),
-        ImageName("data-highway-app:v0.6-rc"),
-        Command("\"java -cp /app/jar/d…\""),
-        Created("4 days ago"),
-        domain.Status("Exited (143) 4 days ago"),
-        Ports(""),
-        Names("bungee-gum"),
-        Size("2.63kB (virtual 792MB)")
-      ),
+      container,
       Container(
         ContainerID("008b5bcae48f"),
         ImageName("postgres"),
@@ -57,7 +58,7 @@ object DockerControllerSpec extends SimpleIOSuite {
 
       override def getImages: IO[List[Image]] = ???
 
-      override def stopContainer(containerID: String): IO[Unit] = ???
+      override def stopContainer(containerID: String): IO[Container] = ???
     }
 
     val dockerControllerRoutes: HttpApp[IO] = DockerController[IO](dockerCLI).routes
@@ -85,7 +86,7 @@ object DockerControllerSpec extends SimpleIOSuite {
 
       override def getImages: IO[List[Image]] = ???
 
-      override def stopContainer(containerID: String): IO[Unit] = ???
+      override def stopContainer(containerID: String): IO[Container] = ???
     }
 
     val dockerControllerRoutes: HttpApp[IO] = DockerController[IO](dockerCLI).routes
@@ -105,7 +106,7 @@ object DockerControllerSpec extends SimpleIOSuite {
 
       override def getImages: IO[List[Image]] = IO(expectedImages)
 
-      override def stopContainer(containerID: String): IO[Unit] = ???
+      override def stopContainer(containerID: String): IO[Container] = ???
     }
 
     val dockerControllerRoutes: HttpApp[IO] = DockerController[IO](dockerCLI).routes
@@ -133,7 +134,7 @@ object DockerControllerSpec extends SimpleIOSuite {
 
       override def getImages: IO[List[Image]] = new Throwable("Error occurred").raiseError
 
-      override def stopContainer(containerID: String): IO[Unit] = ???
+      override def stopContainer(containerID: String): IO[Container] = ???
     }
 
     val dockerControllerRoutes: HttpApp[IO] = DockerController[IO](dockerCLI).routes
@@ -153,7 +154,7 @@ object DockerControllerSpec extends SimpleIOSuite {
 
       override def getImages: IO[List[Image]] = ???
 
-      override def stopContainer(containerID: String): IO[Unit] = IO.unit
+      override def stopContainer(containerID: String): IO[Container] = IO(container)
     }
 
     val dockerControllerRoutes: HttpApp[IO] = DockerController[IO](dockerCLI).routes
@@ -165,11 +166,11 @@ object DockerControllerSpec extends SimpleIOSuite {
       responseNotFound <- dockerControllerRoutes.run(
         Request[IO](method = Method.PUT, uri = uri"/docker/container/containerID/1")
       )
-      retrieved <- responseOk.as[Unit]
+      retrieved <- responseOk.as[Container]
     } yield {
       expect(
         responseOk.status == http4s.Status.Ok &&
-          retrieved == unit &&
+          retrieved == container &&
           responseNotFound.status == http4s.Status.NotFound
       )
     }
@@ -181,7 +182,7 @@ object DockerControllerSpec extends SimpleIOSuite {
 
       override def getImages: IO[List[Image]] = ???
 
-      override def stopContainer(containerID: String): IO[Unit] = new Throwable("Error occurred").raiseError
+      override def stopContainer(containerID: String): IO[Container] = new Throwable("Error occurred").raiseError
     }
 
     val dockerControllerRoutes: HttpApp[IO] = DockerController[IO](dockerCLI).routes
@@ -194,5 +195,4 @@ object DockerControllerSpec extends SimpleIOSuite {
       expect(response.status == http4s.Status.InternalServerError)
     }
   }
-
 }

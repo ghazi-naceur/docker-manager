@@ -3,7 +3,12 @@ package in.oss.docker.manager.cli
 import cats.effect.Async
 import in.oss.docker.manager.domain.*
 import cats.implicits.*
-import in.oss.docker.manager.errors.DockerShellError.{GetContainersError, GetImagesError, StopContainerError}
+import in.oss.docker.manager.errors.DockerShellError.{
+  GetContainersError,
+  GetImagesError,
+  StopContainerError,
+  UnavailableContainer
+}
 import org.typelevel.log4cats.Logger
 
 import scala.sys.process.*
@@ -11,7 +16,7 @@ import scala.sys.process.*
 trait DockerCLI[F[_]] {
   def getContainers: F[List[Container]]
   def getImages: F[List[Image]]
-  def stopContainer(containerID: String): F[Unit]
+  def stopContainer(containerID: String): F[Container]
 }
 
 object DockerCLI {
@@ -32,12 +37,21 @@ object DockerCLI {
         result        <- extractGetImagesResult(commandOutput)
       } yield result
 
-    override def stopContainer(containerID: String): F[Unit] =
+    override def stopContainer(containerID: String): F[Container] =
       for {
-        _             <- Logger[F].info(s"Stopping container '$containerID': 'docker stop $containerID'")
-        commandOutput <- Async[F].delay(Seq("docker", "stop", s"$containerID").!!)
-        result        <- extractStopContainerResult(containerID, commandOutput)
-      } yield result
+        _                <- Logger[F].info(s"Stopping container '$containerID': 'docker stop $containerID'")
+        commandOutput    <- Async[F].delay(Seq("docker", "stop", s"$containerID").!!)
+        _                <- checkStoppingContainerResult(containerID, commandOutput)
+        containers       <- getContainers
+        stoppedContainer <- getContainer(containerID, containers)
+      } yield stoppedContainer
+  }
+
+  def getContainer[F[_]: Async](containerID: String, containers: List[Container]): F[Container] = {
+    containers.find(_.containerId.value == containerID) match {
+      case Some(container) => container.pure[F]
+      case None            => UnavailableContainer(containerID).raiseError
+    }
   }
 
   def extractGetContainersResult[F[_]: Async](commandOutput: String): F[List[Container]] = {
@@ -80,7 +94,7 @@ object DockerCLI {
     else GetImagesError(headerLogLine, Image.imageFields).raiseError
   }
 
-  def extractStopContainerResult[F[_]: Async](containerID: String, commandOutput: String): F[Unit] = {
+  def checkStoppingContainerResult[F[_]: Async](containerID: String, commandOutput: String): F[Unit] = {
     if (commandOutput.replace("\n", "") == containerID) ().pure
     else StopContainerError(containerID, commandOutput).raiseError
   }

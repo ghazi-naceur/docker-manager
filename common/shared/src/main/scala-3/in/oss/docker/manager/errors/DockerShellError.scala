@@ -16,4 +16,6 @@ object DockerShellError {
 
   case class StopContainerError(containerID: String, commandOutput: String)
       extends Throwable(s"Unexpected result when trying to stop the container '$containerID': '$commandOutput'")
+
+  case class UnavailableContainer(containerID: String) extends Throwable(s"Container '$containerID' is not available")
 }

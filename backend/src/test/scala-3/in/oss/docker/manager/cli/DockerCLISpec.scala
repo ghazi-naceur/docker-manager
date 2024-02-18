@@ -2,7 +2,12 @@ package in.oss.docker.manager.cli
 
 import cats.effect.IO
 import in.oss.docker.manager.domain.*
-import in.oss.docker.manager.errors.DockerShellError.{GetContainersError, GetImagesError, StopContainerError}
+import in.oss.docker.manager.errors.DockerShellError.{
+  GetContainersError,
+  GetImagesError,
+  StopContainerError,
+  UnavailableContainer
+}
 import weaver.SimpleIOSuite
 
 object DockerCLISpec extends SimpleIOSuite {
@@ -15,18 +20,20 @@ object DockerCLISpec extends SimpleIOSuite {
       |008b5bcae48f   postgres                   "docker-entrypoint.s…"   8 weeks ago   Up 5 hours                0.0.0.0:5432->5432/tcp, :::5432->5432/tcp   scala-stack_db_1   63B (virtual 417MB)
       |""".stripMargin
 
-  val expectedContainers: List[Container] =
+  val container: Container = Container(
+    ContainerID("587e8f1c0dcb"),
+    ImageName("data-highway-app:v0.6-rc"),
+    Command("\"java -cp /app/jar/d…\""),
+    Created("4 days ago"),
+    Status("Exited (143) 4 days ago"),
+    Ports(""),
+    Names("bungee-gum"),
+    Size("2.63kB (virtual 792MB)")
+  )
+
+  val containers: List[Container] =
     List(
-      Container(
-        ContainerID("587e8f1c0dcb"),
-        ImageName("data-highway-app:v0.6-rc"),
-        Command("\"java -cp /app/jar/d…\""),
-        Created("4 days ago"),
-        Status("Exited (143) 4 days ago"),
-        Ports(""),
-        Names("bungee-gum"),
-        Size("2.63kB (virtual 792MB)")
-      ),
+      container,
       Container(
         ContainerID("008b5bcae48f"),
         ImageName("postgres"),
@@ -46,7 +53,7 @@ object DockerCLISpec extends SimpleIOSuite {
       |demo                       latest               4c679f69d306   12 days ago     303MB
       |""".stripMargin
 
-  val expectedImages: List[Image] = List(
+  val images: List[Image] = List(
     Image(Repository("data-highway-app"), Tag("v0.6-rc"), ImageID("67571ac37859"), Created("6 days ago"), Size("792MB")),
     Image(Repository("<none>"), Tag("<none>"), ImageID("37ab67d4eb59"), Created("6 days ago"), Size("501MB")),
     Image(Repository("demo"), Tag("latest"), ImageID("4c679f69d306"), Created("12 days ago"), Size("303MB"))
@@ -54,7 +61,7 @@ object DockerCLISpec extends SimpleIOSuite {
 
   test("It should be able to get all containers") {
     val result = DockerCLI.extractGetContainersResult[IO](getContainersCommandOutput)
-    result.map(containers => expect(containers == expectedContainers))
+    result.map(containers => expect(containers == containers))
   }
 
   test("It should return an error when encountering an issue while trying to get all containers") {
@@ -64,7 +71,7 @@ object DockerCLISpec extends SimpleIOSuite {
 
   test("It should be able to get all images") {
     val result = DockerCLI.extractGetImagesResult[IO](getImagesCommandOutput)
-    result.map(images => expect(images == expectedImages))
+    result.map(images => expect(images == images))
   }
 
   test("It should return an error when encountering an issue while trying to get all images") {
@@ -72,17 +79,29 @@ object DockerCLISpec extends SimpleIOSuite {
     result.map(images => expect(images == Left(GetImagesError("unknown error", Image.imageFields))))
   }
 
-  test("It should be able to extract the result of stopping a container") {
+  test("It should be able to check that the container has been stopped") {
     val containerId   = "587e8f1c0dcb"
     val commandOutput = "587e8f1c0dcb\n"
-    val result        = DockerCLI.extractStopContainerResult[IO](containerId, commandOutput)
+    val result        = DockerCLI.checkStoppingContainerResult[IO](containerId, commandOutput)
     result.map(output => expect(output == unit))
   }
 
   test("It should return an error when encountering an issue while trying to stop a container") {
     val containerId   = "587e8f1c0dcb"
     val commandOutput = "unknown result"
-    val result        = DockerCLI.extractStopContainerResult[IO](containerId, commandOutput).attempt
+    val result        = DockerCLI.checkStoppingContainerResult[IO](containerId, commandOutput).attempt
     result.map(output => expect(output == Left(StopContainerError(containerId, commandOutput))))
+  }
+
+  test("It should be able to get container by id") {
+    val containerId = "587e8f1c0dcb"
+    val result      = DockerCLI.getContainer(containerId, containers)
+    result.map(cont => expect(cont == container))
+  }
+
+  test("It should return an error when unable to find the container") {
+    val containerId = "unknown container"
+    val result      = DockerCLI.getContainer(containerId, containers).attempt
+    result.map(output => expect(output == Left(UnavailableContainer(containerId))))
   }
 }
