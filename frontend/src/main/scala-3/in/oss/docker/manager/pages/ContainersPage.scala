@@ -2,7 +2,14 @@ package in.oss.docker.manager.pages
 import cats.effect.IO
 import in.oss.docker.manager.pages
 import in.oss.docker.manager.domain.{Container, ContainerID}
-import in.oss.docker.manager.pages.ContainersPage.{AttemptStopContainer, DockerStopped, LoadContainers, Message}
+import in.oss.docker.manager.pages.ContainersPage.{
+  AttemptStartContainer,
+  AttemptStopContainer,
+  DockerStarted,
+  DockerStopped,
+  LoadContainers,
+  Message
+}
 import tyrian.{Cmd, Html}
 import io.circe.parser.*
 import io.circe.generic.auto.*
@@ -21,12 +28,14 @@ final case class ContainersPage(
   override def initCmd: Cmd[IO, Page.Message] = getContainersEndpoint
 
   override def update(message: Page.Message): (Page, Cmd[IO, Page.Message]) = message match {
-    case ContainersPage.LoadContainers(cont)              => (this.copy(containers = containers ++ cont), Cmd.None)
-    case ContainersPage.GoToPage(pageNumber)              => (this.copy(currentPage = pageNumber), Cmd.None)
-    case ContainersPage.AttemptStopContainer(containerID) => (this, stopContainer(containerID))
-    case ContainersPage.DockerStopped(container)          => (this.copy(containers = refreshContainers(container)), Cmd.None)
-    case ContainersPage.NoOp                              => (this, Cmd.None)
-    case ContainersPage.Error(error)                      => (this, Cmd.None)
+    case ContainersPage.LoadContainers(cont)               => (this.copy(containers = containers ++ cont), Cmd.None)
+    case ContainersPage.GoToPage(pageNumber)               => (this.copy(currentPage = pageNumber), Cmd.None)
+    case ContainersPage.AttemptStopContainer(containerID)  => (this, stopContainer(containerID))
+    case ContainersPage.DockerStopped(container)           => (this.copy(containers = refreshContainers(container)), Cmd.None)
+    case ContainersPage.AttemptStartContainer(containerID) => (this, startContainer(containerID))
+    case ContainersPage.DockerStarted(container)           => (this.copy(containers = refreshContainers(container)), Cmd.None)
+    case ContainersPage.NoOp                               => (this, Cmd.None)
+    case ContainersPage.Error(error)                       => (this, Cmd.None)
   }
 
   private def refreshContainers(container: Container): List[Container] = {
@@ -76,7 +85,8 @@ final case class ContainersPage(
                     attribute("aria-expanded", "false")
                   )("Choose action"),
                   div(`class` := "dropdown-menu", attribute("aria-labelledby", "dropdownMenuButton"))(
-                    a(`class` := "dropdown-item", onClick(AttemptStopContainer(container.containerId)))("Stop")
+                    a(`class` := "dropdown-item", onClick(AttemptStopContainer(container.containerId)))("Stop"),
+                    a(`class` := "dropdown-item", onClick(AttemptStartContainer(container.containerId)))("Start")
                   )
                 )
               )
@@ -110,11 +120,25 @@ final case class ContainersPage(
 
   private def stopContainer(containerID: ContainerID): Cmd[IO, Message] = {
     Http.send(
-      Request(method = Put, url = s"$backendHost/docker/container/${containerID.value}"),
+      Request(method = Put, url = s"$backendHost/docker/container/${containerID.value}/stop"),
       Decoder[Message](
         response =>
           parse(response.body).flatMap(_.as[Container]) match {
             case Right(container) => DockerStopped(container)
+            case Left(thr)        => ContainersPage.Error(thr.getMessage)
+          },
+        error => ContainersPage.Error(error.toString)
+      )
+    )
+  }
+
+  private def startContainer(containerID: ContainerID): Cmd[IO, Message] = {
+    Http.send(
+      Request(method = Put, url = s"$backendHost/docker/container/${containerID.value}/start"),
+      Decoder[Message](
+        response =>
+          parse(response.body).flatMap(_.as[Container]) match {
+            case Right(container) => DockerStarted(container)
             case Left(thr)        => ContainersPage.Error(thr.getMessage)
           },
         error => ContainersPage.Error(error.toString)
@@ -137,6 +161,10 @@ object ContainersPage {
   case class AttemptStopContainer(containerID: ContainerID) extends Message
 
   case class DockerStopped(container: Container) extends Message
+
+  case class AttemptStartContainer(containerID: ContainerID) extends Message
+
+  case class DockerStarted(container: Container) extends Message
 
   case class Model(containers: List[Container])
 }
