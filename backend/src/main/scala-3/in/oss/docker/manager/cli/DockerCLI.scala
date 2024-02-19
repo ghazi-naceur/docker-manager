@@ -17,6 +17,7 @@ trait DockerCLI[F[_]] {
   def getContainers: F[List[Container]]
   def getImages: F[List[Image]]
   def stopContainer(containerID: String): F[Container]
+  def startContainer(containerID: String): F[Container]
 }
 
 object DockerCLI {
@@ -41,10 +42,19 @@ object DockerCLI {
       for {
         _                <- Logger[F].info(s"Stopping container '$containerID': 'docker stop $containerID'")
         commandOutput    <- Async[F].delay(Seq("docker", "stop", s"$containerID").!!)
-        _                <- checkStoppingContainerResult(containerID, commandOutput)
+        _                <- checkContainerStatusResult(containerID, commandOutput)
         containers       <- getContainers
         stoppedContainer <- getContainer(containerID, containers)
       } yield stoppedContainer
+
+    override def startContainer(containerID: String): F[Container] =
+      for {
+        _                <- Logger[F].info(s"Starting container '$containerID': 'docker start $containerID'")
+        commandOutput    <- Async[F].delay(Seq("docker", "start", s"$containerID").!!)
+        _                <- checkContainerStatusResult(containerID, commandOutput)
+        containers       <- getContainers
+        startedContainer <- getContainer(containerID, containers)
+      } yield startedContainer
   }
 
   def getContainer[F[_]: Async](containerID: String, containers: List[Container]): F[Container] = {
@@ -94,7 +104,7 @@ object DockerCLI {
     else GetImagesError(headerLogLine, Image.imageFields).raiseError
   }
 
-  def checkStoppingContainerResult[F[_]: Async](containerID: String, commandOutput: String): F[Unit] = {
+  def checkContainerStatusResult[F[_]: Async](containerID: String, commandOutput: String): F[Unit] = {
     if (commandOutput.replace("\n", "") == containerID) ().pure
     else StopContainerError(containerID, commandOutput).raiseError
   }

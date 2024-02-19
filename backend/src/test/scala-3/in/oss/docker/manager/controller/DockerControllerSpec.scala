@@ -59,6 +59,8 @@ object DockerControllerSpec extends SimpleIOSuite {
       override def getImages: IO[List[Image]] = ???
 
       override def stopContainer(containerID: String): IO[Container] = ???
+
+      override def startContainer(containerID: String): IO[Container] = ???
     }
 
     val dockerControllerRoutes: HttpApp[IO] = DockerController[IO](dockerCLI).routes
@@ -87,6 +89,8 @@ object DockerControllerSpec extends SimpleIOSuite {
       override def getImages: IO[List[Image]] = ???
 
       override def stopContainer(containerID: String): IO[Container] = ???
+
+      override def startContainer(containerID: String): IO[Container] = ???
     }
 
     val dockerControllerRoutes: HttpApp[IO] = DockerController[IO](dockerCLI).routes
@@ -107,6 +111,8 @@ object DockerControllerSpec extends SimpleIOSuite {
       override def getImages: IO[List[Image]] = IO(expectedImages)
 
       override def stopContainer(containerID: String): IO[Container] = ???
+
+      override def startContainer(containerID: String): IO[Container] = ???
     }
 
     val dockerControllerRoutes: HttpApp[IO] = DockerController[IO](dockerCLI).routes
@@ -135,6 +141,8 @@ object DockerControllerSpec extends SimpleIOSuite {
       override def getImages: IO[List[Image]] = new Throwable("Error occurred").raiseError
 
       override def stopContainer(containerID: String): IO[Container] = ???
+
+      override def startContainer(containerID: String): IO[Container] = ???
     }
 
     val dockerControllerRoutes: HttpApp[IO] = DockerController[IO](dockerCLI).routes
@@ -155,16 +163,18 @@ object DockerControllerSpec extends SimpleIOSuite {
       override def getImages: IO[List[Image]] = ???
 
       override def stopContainer(containerID: String): IO[Container] = IO(container)
+
+      override def startContainer(containerID: String): IO[Container] = ???
     }
 
     val dockerControllerRoutes: HttpApp[IO] = DockerController[IO](dockerCLI).routes
 
     for {
       responseOk <- dockerControllerRoutes.run(
-        Request[IO](method = Method.PUT, uri = uri"/docker/container/containerID")
+        Request[IO](method = Method.PUT, uri = uri"/docker/container/containerID/stop")
       )
       responseNotFound <- dockerControllerRoutes.run(
-        Request[IO](method = Method.PUT, uri = uri"/docker/container/containerID/1")
+        Request[IO](method = Method.PUT, uri = uri"/docker/container/containerID/stop/1")
       )
       retrieved <- responseOk.as[Container]
     } yield {
@@ -183,13 +193,67 @@ object DockerControllerSpec extends SimpleIOSuite {
       override def getImages: IO[List[Image]] = ???
 
       override def stopContainer(containerID: String): IO[Container] = new Throwable("Error occurred").raiseError
+
+      override def startContainer(containerID: String): IO[Container] = ???
     }
 
     val dockerControllerRoutes: HttpApp[IO] = DockerController[IO](dockerCLI).routes
 
     for {
       response <- dockerControllerRoutes.run(
-        Request[IO](method = Method.PUT, uri = uri"/docker/container/containerID")
+        Request[IO](method = Method.PUT, uri = uri"/docker/container/containerID/stop")
+      )
+    } yield {
+      expect(response.status == http4s.Status.InternalServerError)
+    }
+  }
+
+  test("It should be able to start a container") {
+    val dockerCLI: DockerCLI[IO] = new DockerCLI[IO] {
+      override def getContainers: IO[List[Container]] = ???
+
+      override def getImages: IO[List[Image]] = ???
+
+      override def stopContainer(containerID: String): IO[Container] = ???
+
+      override def startContainer(containerID: String): IO[Container] = IO(container)
+    }
+
+    val dockerControllerRoutes: HttpApp[IO] = DockerController[IO](dockerCLI).routes
+
+    for {
+      responseOk <- dockerControllerRoutes.run(
+        Request[IO](method = Method.PUT, uri = uri"/docker/container/containerID/start")
+      )
+      responseNotFound <- dockerControllerRoutes.run(
+        Request[IO](method = Method.PUT, uri = uri"/docker/container/containerID/start/1")
+      )
+      retrieved <- responseOk.as[Container]
+    } yield {
+      expect(
+        responseOk.status == http4s.Status.Ok &&
+          retrieved == container &&
+          responseNotFound.status == http4s.Status.NotFound
+      )
+    }
+  }
+
+  test("It should be able to return an error when unable to start a container") {
+    val dockerCLI: DockerCLI[IO] = new DockerCLI[IO] {
+      override def getContainers: IO[List[Container]] = ???
+
+      override def getImages: IO[List[Image]] = ???
+
+      override def stopContainer(containerID: String): IO[Container] = ???
+
+      override def startContainer(containerID: String): IO[Container] = new Throwable("Error occurred").raiseError
+    }
+
+    val dockerControllerRoutes: HttpApp[IO] = DockerController[IO](dockerCLI).routes
+
+    for {
+      response <- dockerControllerRoutes.run(
+        Request[IO](method = Method.PUT, uri = uri"/docker/container/containerID/start")
       )
     } yield {
       expect(response.status == http4s.Status.InternalServerError)

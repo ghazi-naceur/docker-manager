@@ -30,7 +30,7 @@ class DockerController[F[_]: Async](dockerShell: DockerCLI[F]) extends Http4sDsl
       }
   }
 
-  val stopDockerContainer: HttpRoutes[F] = HttpRoutes.of[F] { case PUT -> Root / "container" / containerID =>
+  val stopDockerContainer: HttpRoutes[F] = HttpRoutes.of[F] { case PUT -> Root / "container" / containerID / "stop" =>
     dockerShell
       .stopContainer(containerID)
       .flatMap(Ok(_))
@@ -39,7 +39,16 @@ class DockerController[F[_]: Async](dockerShell: DockerCLI[F]) extends Http4sDsl
       }
   }
 
+  val startDockerContainer: HttpRoutes[F] = HttpRoutes.of[F] { case PUT -> Root / "container" / containerID / "start" =>
+    dockerShell
+      .startContainer(containerID)
+      .flatMap(Ok(_))
+      .recoverWith { case thr =>
+        InternalServerError(thr.getMessage)
+      }
+  }
+
   def routes: HttpApp[F] = Router(
-    "/docker" -> (getDockerContainers <+> getDockerImages <+> stopDockerContainer)
+    "/docker" -> (getDockerContainers <+> getDockerImages <+> stopDockerContainer <+> startDockerContainer)
   ).orNotFound
 }

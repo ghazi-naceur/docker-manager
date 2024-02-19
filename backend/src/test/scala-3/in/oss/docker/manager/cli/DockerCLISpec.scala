@@ -79,17 +79,17 @@ object DockerCLISpec extends SimpleIOSuite {
     result.map(images => expect(images == Left(GetImagesError("unknown error", Image.imageFields))))
   }
 
-  test("It should be able to check that the container has been stopped") {
+  test("It should be able to check that the container has been stopped or started") {
     val containerId   = "587e8f1c0dcb"
     val commandOutput = "587e8f1c0dcb\n"
-    val result        = DockerCLI.checkStoppingContainerResult[IO](containerId, commandOutput)
+    val result        = DockerCLI.checkContainerStatusResult[IO](containerId, commandOutput)
     result.map(output => expect(output == unit))
   }
 
-  test("It should return an error when encountering an issue while trying to stop a container") {
+  test("It should return an error when encountering an issue while trying to stop or start a container") {
     val containerId   = "587e8f1c0dcb"
     val commandOutput = "unknown result"
-    val result        = DockerCLI.checkStoppingContainerResult[IO](containerId, commandOutput).attempt
+    val result        = DockerCLI.checkContainerStatusResult[IO](containerId, commandOutput).attempt
     result.map(output => expect(output == Left(StopContainerError(containerId, commandOutput))))
   }
 
