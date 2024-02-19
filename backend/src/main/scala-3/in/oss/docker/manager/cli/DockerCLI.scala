@@ -6,7 +6,7 @@ import cats.implicits.*
 import in.oss.docker.manager.errors.DockerShellError.{
   GetContainersError,
   GetImagesError,
-  StopContainerError,
+  ContainerStatusError,
   UnavailableContainer
 }
 import org.typelevel.log4cats.Logger
@@ -106,7 +106,7 @@ object DockerCLI {
 
   def checkContainerStatusResult[F[_]: Async](containerID: String, commandOutput: String): F[Unit] = {
     if (commandOutput.replace("\n", "") == containerID) ().pure
-    else StopContainerError(containerID, commandOutput).raiseError
+    else ContainerStatusError(containerID, commandOutput).raiseError
   }
 
   private def checkFieldsExistence(header: String, fields: List[String]): Boolean =

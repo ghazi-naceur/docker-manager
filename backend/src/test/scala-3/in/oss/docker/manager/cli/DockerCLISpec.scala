@@ -5,7 +5,7 @@ import in.oss.docker.manager.domain.*
 import in.oss.docker.manager.errors.DockerShellError.{
   GetContainersError,
   GetImagesError,
-  StopContainerError,
+  ContainerStatusError,
   UnavailableContainer
 }
 import weaver.SimpleIOSuite
@@ -90,7 +90,7 @@ object DockerCLISpec extends SimpleIOSuite {
     val containerId   = "587e8f1c0dcb"
     val commandOutput = "unknown result"
     val result        = DockerCLI.checkContainerStatusResult[IO](containerId, commandOutput).attempt
-    result.map(output => expect(output == Left(StopContainerError(containerId, commandOutput))))
+    result.map(output => expect(output == Left(ContainerStatusError(containerId, commandOutput))))
   }
 
   test("It should be able to get container by id") {

@@ -14,8 +14,8 @@ object DockerShellError {
         s"Get images command is supposed to return these fields ${expectedFields.flat}, but returned these fields instead: '$logsHeader'"
       )
 
-  case class StopContainerError(containerID: String, commandOutput: String)
-      extends Throwable(s"Unexpected result when trying to stop the container '$containerID': '$commandOutput'")
+  case class ContainerStatusError(containerID: String, commandOutput: String)
+      extends Throwable(s"Unexpected result when trying to change the status of the container '$containerID': '$commandOutput'")
 
   case class UnavailableContainer(containerID: String) extends Throwable(s"Container '$containerID' is not available")
 }
