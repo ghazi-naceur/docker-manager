@@ -67,11 +67,18 @@ final case class ContainersPage(
               td(`class` := "align-middle")(container.names.value),
               td(`class` := "align-middle")(container.size.value),
               td(`class` := "align-middle")(
-                button(
-                  `class` := "btn btn-outline-warning",
-                  `type`  := "button",
-                  onClick(AttemptStopContainer(container.containerId))
-                )("Stop")
+                div(`class` := "dropdown")(
+                  button(
+                    `class` := "btn btn-secondary dropdown-toggle",
+                    `type`  := "button",
+                    id      := "dropdownMenuButton",
+                    attribute("data-bs-toggle", "dropdown"),
+                    attribute("aria-expanded", "false")
+                  )("Choose action"),
+                  div(`class` := "dropdown-menu", attribute("aria-labelledby", "dropdownMenuButton"))(
+                    a(`class` := "dropdown-item", onClick(AttemptStopContainer(container.containerId)))("Stop")
+                  )
+                )
               )
             )
         )
