@@ -11,8 +11,6 @@ import in.oss.docker.manager.errors.DockerShellError.{
 }
 import org.typelevel.log4cats.Logger
 
-import scala.sys.process.*
-
 trait DockerCLI[F[_]] {
   def getContainers: F[List[Container]]
   def getImages: F[List[Image]]
@@ -28,21 +26,22 @@ object DockerCLI {
     override def getContainers: F[List[Container]] =
       for {
         _             <- Logger[F].info("Listing all docker containers: 'docker ps -a -s'")
-        commandOutput <- Async[F].delay(Seq("docker", "ps", "-a", "-s").!!)
+        commandOutput <- commandExecutor.execute(Seq("docker", "ps", "-a", "-s"))
+        _             <- Logger[F].info(s"com: $commandOutput")
         result        <- extractGetContainersResult(commandOutput)
       } yield result
 
     override def getImages: F[List[Image]] =
       for {
         _             <- Logger[F].info("Listing all docker images: 'docker images -a'")
-        commandOutput <- Async[F].delay(Seq("docker", "images", "-a").!!)
+        commandOutput <- commandExecutor.execute(Seq("docker", "images", "-a"))
         result        <- extractGetImagesResult(commandOutput)
       } yield result
 
     override def stopContainer(containerID: String): F[Container] =
       for {
         _                <- Logger[F].info(s"Stopping container '$containerID': 'docker stop $containerID'")
-        commandOutput    <- Async[F].delay(Seq("docker", "stop", containerID).!!)
+        commandOutput    <- commandExecutor.execute(Seq("docker", "stop", containerID))
         _                <- checkContainerStatusResult(containerID, commandOutput)
         containers       <- getContainers
         stoppedContainer <- getContainer(containerID, containers)
@@ -51,7 +50,7 @@ object DockerCLI {
     override def startContainer(containerID: String): F[Container] =
       for {
         _                <- Logger[F].info(s"Starting container '$containerID': 'docker start $containerID'")
-        commandOutput    <- Async[F].delay(Seq("docker", "start", containerID).!!)
+        commandOutput    <- commandExecutor.execute(Seq("docker", "start", containerID))
         _                <- checkContainerStatusResult(containerID, commandOutput)
         containers       <- getContainers
         startedContainer <- getContainer(containerID, containers)

@@ -23,8 +23,8 @@ object CommandExecutor {
     val errorBuffer: StringBuilder  = new StringBuilder
 
     val processLogger: ProcessLogger = ProcessLogger(
-      out => outputBuffer.append(out),
-      err => errorBuffer.append(err)
+      out => outputBuffer.append(out + "\n"),
+      err => errorBuffer.append(err + "\n")
     )
 
     override def execute(command: Seq[String]): F[String] =
