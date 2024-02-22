@@ -4,9 +4,9 @@ import cats.effect.Async
 import in.oss.docker.manager.domain.*
 import cats.implicits.*
 import in.oss.docker.manager.errors.DockerShellError.{
+  ContainerStatusError,
   GetContainersError,
   GetImagesError,
-  ContainerStatusError,
   UnavailableContainer
 }
 import org.typelevel.log4cats.Logger
@@ -18,11 +18,12 @@ trait DockerCLI[F[_]] {
   def getImages: F[List[Image]]
   def stopContainer(containerID: String): F[Container]
   def startContainer(containerID: String): F[Container]
+  def removeContainer(containerID: String): F[List[Container]]
 }
 
 object DockerCLI {
 
-  def impl[F[_]: Logger: Async](): DockerCLI[F] = new DockerCLI[F] {
+  def impl[F[_]: Logger: Async](commandExecutor: CommandExecutor[F]): DockerCLI[F] = new DockerCLI[F] {
 
     override def getContainers: F[List[Container]] =
       for {
@@ -41,7 +42,7 @@ object DockerCLI {
     override def stopContainer(containerID: String): F[Container] =
       for {
         _                <- Logger[F].info(s"Stopping container '$containerID': 'docker stop $containerID'")
-        commandOutput    <- Async[F].delay(Seq("docker", "stop", s"$containerID").!!)
+        commandOutput    <- Async[F].delay(Seq("docker", "stop", containerID).!!)
         _                <- checkContainerStatusResult(containerID, commandOutput)
         containers       <- getContainers
         stoppedContainer <- getContainer(containerID, containers)
@@ -50,11 +51,19 @@ object DockerCLI {
     override def startContainer(containerID: String): F[Container] =
       for {
         _                <- Logger[F].info(s"Starting container '$containerID': 'docker start $containerID'")
-        commandOutput    <- Async[F].delay(Seq("docker", "start", s"$containerID").!!)
+        commandOutput    <- Async[F].delay(Seq("docker", "start", containerID).!!)
         _                <- checkContainerStatusResult(containerID, commandOutput)
         containers       <- getContainers
         startedContainer <- getContainer(containerID, containers)
       } yield startedContainer
+
+    override def removeContainer(containerID: String): F[List[Container]] =
+      for {
+        _             <- Logger[F].info(s"Removing container '$containerID': 'docker rm $containerID'")
+        commandOutput <- commandExecutor.execute(Seq("docker", "rm", containerID))
+        _             <- checkContainerStatusResult(containerID, commandOutput)
+        containers    <- getContainers
+      } yield containers
   }
 
   def getContainer[F[_]: Async](containerID: String, containers: List[Container]): F[Container] = {

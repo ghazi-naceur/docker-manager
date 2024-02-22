@@ -61,6 +61,8 @@ object DockerControllerSpec extends SimpleIOSuite {
       override def stopContainer(containerID: String): IO[Container] = ???
 
       override def startContainer(containerID: String): IO[Container] = ???
+
+      override def removeContainer(containerID: String): IO[List[Container]] = ???
     }
 
     val dockerControllerRoutes: HttpApp[IO] = DockerController[IO](dockerCLI).routes
@@ -91,6 +93,8 @@ object DockerControllerSpec extends SimpleIOSuite {
       override def stopContainer(containerID: String): IO[Container] = ???
 
       override def startContainer(containerID: String): IO[Container] = ???
+
+      override def removeContainer(containerID: String): IO[List[Container]] = ???
     }
 
     val dockerControllerRoutes: HttpApp[IO] = DockerController[IO](dockerCLI).routes
@@ -113,6 +117,8 @@ object DockerControllerSpec extends SimpleIOSuite {
       override def stopContainer(containerID: String): IO[Container] = ???
 
       override def startContainer(containerID: String): IO[Container] = ???
+
+      override def removeContainer(containerID: String): IO[List[Container]] = ???
     }
 
     val dockerControllerRoutes: HttpApp[IO] = DockerController[IO](dockerCLI).routes
@@ -143,6 +149,8 @@ object DockerControllerSpec extends SimpleIOSuite {
       override def stopContainer(containerID: String): IO[Container] = ???
 
       override def startContainer(containerID: String): IO[Container] = ???
+
+      override def removeContainer(containerID: String): IO[List[Container]] = ???
     }
 
     val dockerControllerRoutes: HttpApp[IO] = DockerController[IO](dockerCLI).routes
@@ -165,6 +173,8 @@ object DockerControllerSpec extends SimpleIOSuite {
       override def stopContainer(containerID: String): IO[Container] = IO(container)
 
       override def startContainer(containerID: String): IO[Container] = ???
+
+      override def removeContainer(containerID: String): IO[List[Container]] = ???
     }
 
     val dockerControllerRoutes: HttpApp[IO] = DockerController[IO](dockerCLI).routes
@@ -195,6 +205,8 @@ object DockerControllerSpec extends SimpleIOSuite {
       override def stopContainer(containerID: String): IO[Container] = new Throwable("Error occurred").raiseError
 
       override def startContainer(containerID: String): IO[Container] = ???
+
+      override def removeContainer(containerID: String): IO[List[Container]] = ???
     }
 
     val dockerControllerRoutes: HttpApp[IO] = DockerController[IO](dockerCLI).routes
@@ -217,6 +229,8 @@ object DockerControllerSpec extends SimpleIOSuite {
       override def stopContainer(containerID: String): IO[Container] = ???
 
       override def startContainer(containerID: String): IO[Container] = IO(container)
+
+      override def removeContainer(containerID: String): IO[List[Container]] = ???
     }
 
     val dockerControllerRoutes: HttpApp[IO] = DockerController[IO](dockerCLI).routes
@@ -247,6 +261,8 @@ object DockerControllerSpec extends SimpleIOSuite {
       override def stopContainer(containerID: String): IO[Container] = ???
 
       override def startContainer(containerID: String): IO[Container] = new Throwable("Error occurred").raiseError
+
+      override def removeContainer(containerID: String): IO[List[Container]] = ???
     }
 
     val dockerControllerRoutes: HttpApp[IO] = DockerController[IO](dockerCLI).routes
@@ -254,6 +270,62 @@ object DockerControllerSpec extends SimpleIOSuite {
     for {
       response <- dockerControllerRoutes.run(
         Request[IO](method = Method.PUT, uri = uri"/docker/container/containerID/start")
+      )
+    } yield {
+      expect(response.status == http4s.Status.InternalServerError)
+    }
+  }
+
+  test("It should be able to remove a container") {
+    val dockerCLI: DockerCLI[IO] = new DockerCLI[IO] {
+      override def getContainers: IO[List[Container]] = ???
+
+      override def getImages: IO[List[Image]] = ???
+
+      override def stopContainer(containerID: String): IO[Container] = ???
+
+      override def startContainer(containerID: String): IO[Container] = ???
+
+      override def removeContainer(containerID: String): IO[List[Container]] = IO(List(container))
+    }
+
+    val dockerControllerRoutes: HttpApp[IO] = DockerController[IO](dockerCLI).routes
+
+    for {
+      responseOk <- dockerControllerRoutes.run(
+        Request[IO](method = Method.DELETE, uri = uri"/docker/container/containerID")
+      )
+      responseNotFound <- dockerControllerRoutes.run(
+        Request[IO](method = Method.DELETE, uri = uri"/docker/container/containerID/1")
+      )
+      retrieved <- responseOk.as[List[Container]]
+    } yield {
+      expect(
+        responseOk.status == http4s.Status.Ok &&
+          retrieved == List(container) &&
+          responseNotFound.status == http4s.Status.NotFound
+      )
+    }
+  }
+
+  test("It should be able to return an error when unable to remove a container") {
+    val dockerCLI: DockerCLI[IO] = new DockerCLI[IO] {
+      override def getContainers: IO[List[Container]] = ???
+
+      override def getImages: IO[List[Image]] = ???
+
+      override def stopContainer(containerID: String): IO[Container] = ???
+
+      override def startContainer(containerID: String): IO[Container] = ???
+
+      override def removeContainer(containerID: String): IO[List[Container]] = new Throwable("Error occurred").raiseError
+    }
+
+    val dockerControllerRoutes: HttpApp[IO] = DockerController[IO](dockerCLI).routes
+
+    for {
+      response <- dockerControllerRoutes.run(
+        Request[IO](method = Method.DELETE, uri = uri"/docker/container/containerID")
       )
     } yield {
       expect(response.status == http4s.Status.InternalServerError)

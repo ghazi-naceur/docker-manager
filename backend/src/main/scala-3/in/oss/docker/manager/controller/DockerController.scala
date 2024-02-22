@@ -12,10 +12,10 @@ import org.http4s.circe.CirceEntityCodec.*
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 
-class DockerController[F[_]: Async](dockerShell: DockerCLI[F]) extends Http4sDsl[F] {
+class DockerController[F[_]: Async](dockerCLI: DockerCLI[F]) extends Http4sDsl[F] {
 
   val getDockerContainers: HttpRoutes[F] = HttpRoutes.of[F] { case GET -> Root / "containers" =>
-    dockerShell.getContainers
+    dockerCLI.getContainers
       .flatMap(Ok(_))
       .recoverWith { case thr =>
         InternalServerError(thr.getMessage)
@@ -23,7 +23,7 @@ class DockerController[F[_]: Async](dockerShell: DockerCLI[F]) extends Http4sDsl
   }
 
   val getDockerImages: HttpRoutes[F] = HttpRoutes.of[F] { case GET -> Root / "images" =>
-    dockerShell.getImages
+    dockerCLI.getImages
       .flatMap(Ok(_))
       .recoverWith { case thr =>
         InternalServerError(thr.getMessage)
@@ -31,7 +31,7 @@ class DockerController[F[_]: Async](dockerShell: DockerCLI[F]) extends Http4sDsl
   }
 
   val stopDockerContainer: HttpRoutes[F] = HttpRoutes.of[F] { case PUT -> Root / "container" / containerID / "stop" =>
-    dockerShell
+    dockerCLI
       .stopContainer(containerID)
       .flatMap(Ok(_))
       .recoverWith { case thr =>
@@ -40,7 +40,7 @@ class DockerController[F[_]: Async](dockerShell: DockerCLI[F]) extends Http4sDsl
   }
 
   val startDockerContainer: HttpRoutes[F] = HttpRoutes.of[F] { case PUT -> Root / "container" / containerID / "start" =>
-    dockerShell
+    dockerCLI
       .startContainer(containerID)
       .flatMap(Ok(_))
       .recoverWith { case thr =>
@@ -48,7 +48,16 @@ class DockerController[F[_]: Async](dockerShell: DockerCLI[F]) extends Http4sDsl
       }
   }
 
+  val removeDockerContainer: HttpRoutes[F] = HttpRoutes.of[F] { case DELETE -> Root / "container" / containerID =>
+    dockerCLI
+      .removeContainer(containerID)
+      .flatMap(Ok(_))
+      .recoverWith { case thr =>
+        InternalServerError(thr.getMessage)
+      }
+  }
+
   def routes: HttpApp[F] = Router(
-    "/docker" -> (getDockerContainers <+> getDockerImages <+> stopDockerContainer <+> startDockerContainer)
+    "/docker" -> (getDockerContainers <+> getDockerImages <+> stopDockerContainer <+> startDockerContainer <+> removeDockerContainer)
   ).orNotFound
 }
