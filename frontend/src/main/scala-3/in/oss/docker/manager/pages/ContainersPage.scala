@@ -15,22 +15,23 @@ final case class ContainersPage(
     backendHost: String,
     currentPage: Int = 1,
     itemsPerPage: Int = 10,
-    containers: List[Container] = List()
+    containers: List[Container] = List(),
+    errorMessage: String = ""
 ) extends Page {
 
   override def initCmd: Cmd[IO, Page.Message] = getContainersEndpoint
 
   override def update(message: Page.Message): (Page, Cmd[IO, Page.Message]) = message match {
-    case ContainersPage.LoadContainers(cont)                  => (this.copy(containers = containers ++ cont), Cmd.None)
-    case ContainersPage.GoToPage(pageNumber)                  => (this.copy(currentPage = pageNumber), Cmd.None)
-    case ContainersPage.AttemptStopContainer(containerID)     => (this, stopContainer(containerID))
-    case ContainersPage.ContainerStopped(container)           => (this.copy(containers = refreshContainers(container)), Cmd.None)
-    case ContainersPage.AttemptStartContainer(containerID)    => (this, startContainer(containerID))
-    case ContainersPage.ContainerStarted(container)           => (this.copy(containers = refreshContainers(container)), Cmd.None)
-    case ContainersPage.AttemptRemoveContainer(containerID)   => (this, removeContainer(containerID))
-    case ContainersPage.ContainerRemoved(remainingContainers) => (this.copy(containers = remainingContainers), Cmd.None)
-    case ContainersPage.NoOp                                  => (this, Cmd.None)
-    case ContainersPage.Error(error)                          => (this, Cmd.None)
+    case LoadContainers(cont)               => (this.copy(containers = containers ++ cont, errorMessage = ""), Cmd.None)
+    case GoToPage(pageNumber)               => (this.copy(currentPage = pageNumber, errorMessage = ""), Cmd.None)
+    case AttemptStopContainer(containerID)  => (this, stopContainer(containerID))
+    case ContainerStopped(container)        => (this.copy(containers = refreshContainers(container), errorMessage = ""), Cmd.None)
+    case AttemptStartContainer(containerID) => (this, startContainer(containerID))
+    case ContainerStarted(container)        => (this.copy(containers = refreshContainers(container), errorMessage = ""), Cmd.None)
+    case AttemptRemoveContainer(containerID)   => (this, removeContainer(containerID))
+    case ContainerRemoved(remainingContainers) => (this.copy(containers = remainingContainers, errorMessage = ""), Cmd.None)
+    case NoOp                                  => (this, Cmd.None)
+    case Error(error)                          => (this.copy(errorMessage = error), Cmd.None)
   }
 
   private def refreshContainers(container: Container): List[Container] = {
@@ -43,60 +44,63 @@ final case class ContainersPage(
     val endIndex   = startIndex + this.itemsPerPage
     val pageItems  = this.containers.slice(startIndex, endIndex)
 
-    div(`class` := "col-md-11")(
-      div(h2("Containers list")),
-      table(`class` := "table")(
-        thead(
-          tr(
-            th("Container ID"),
-            th("Image"),
-            th("Command"),
-            th("Created"),
-            th("Status"),
-            th("Ports"),
-            th("Names"),
-            th("Size"),
-            th("Actions")
-          )
-        ),
-        tbody(
-          for (container <- pageItems)
-            yield tr(
-              td(`class` := "align-middle")(container.containerId.value),
-              td(`class` := "align-middle")(container.imageName.value),
-              td(`class` := "align-middle")(container.command.value),
-              td(`class` := "align-middle")(container.created.value),
-              td(`class` := "align-middle")(container.status.value),
-              td(`class` := "align-middle")(container.ports.value),
-              td(`class` := "align-middle")(container.names.value),
-              td(`class` := "align-middle")(container.size.value),
-              td(`class` := "align-middle")(
-                div(`class` := "dropdown")(
-                  button(
-                    `class` := "btn btn-secondary dropdown-toggle",
-                    `type`  := "button",
-                    id      := "dropdownMenuButton",
-                    attribute("data-bs-toggle", "dropdown"),
-                    attribute("aria-expanded", "false")
-                  )("Choose action"),
-                  div(`class` := "dropdown-menu", attribute("aria-labelledby", "dropdownMenuButton"))(
-                    a(`class` := "dropdown-item", onClick(AttemptStopContainer(container.containerId)))("Stop"),
-                    a(`class` := "dropdown-item", onClick(AttemptStartContainer(container.containerId)))("Start"),
-                    a(`class` := "dropdown-item", onClick(AttemptRemoveContainer(container.containerId)))("Remove")
+    div(
+      div(`class` := "col-md-11")(
+        div(h2("Containers list")),
+        table(`class` := "table")(
+          thead(
+            tr(
+              th("Container ID"),
+              th("Image"),
+              th("Command"),
+              th("Created"),
+              th("Status"),
+              th("Ports"),
+              th("Names"),
+              th("Size"),
+              th("Actions")
+            )
+          ),
+          tbody(
+            for (container <- pageItems)
+              yield tr(
+                td(`class` := "align-middle")(container.containerId.value),
+                td(`class` := "align-middle")(container.imageName.value),
+                td(`class` := "align-middle")(container.command.value),
+                td(`class` := "align-middle")(container.created.value),
+                td(`class` := "align-middle")(container.status.value),
+                td(`class` := "align-middle")(container.ports.value),
+                td(`class` := "align-middle")(container.names.value),
+                td(`class` := "align-middle")(container.size.value),
+                td(`class` := "align-middle")(
+                  div(`class` := "dropdown")(
+                    button(
+                      `class` := "btn btn-secondary dropdown-toggle",
+                      `type`  := "button",
+                      id      := "dropdownMenuButton",
+                      attribute("data-bs-toggle", "dropdown"),
+                      attribute("aria-expanded", "false")
+                    )("Choose action"),
+                    div(`class` := "dropdown-menu", attribute("aria-labelledby", "dropdownMenuButton"))(
+                      a(`class` := "dropdown-item", onClick(AttemptStopContainer(container.containerId)))("Stop"),
+                      a(`class` := "dropdown-item", onClick(AttemptStartContainer(container.containerId)))("Start"),
+                      a(`class` := "dropdown-item", onClick(AttemptRemoveContainer(container.containerId)))("Remove")
+                    )
                   )
                 )
               )
-            )
+          )
+        ),
+        div(cls := "d-flex justify-content-center mt-3")(
+          (for (page <- 1 to totalPages) yield {
+            button(
+              cls := "btn btn-secondary mx-1" + (if (page == this.currentPage) " active" else ""),
+              onClick(ContainersPage.GoToPage(page))
+            )(page.toString)
+          }).toList
         )
       ),
-      div(cls := "d-flex justify-content-center mt-3")(
-        (for (page <- 1 to totalPages) yield {
-          button(
-            cls := "btn btn-secondary mx-1" + (if (page == this.currentPage) " active" else ""),
-            onClick(ContainersPage.GoToPage(page))
-          )(page.toString)
-        }).toList
-      )
+      div(`class` := "col-md-11")(label(errorMessage))
     )
   }
 
@@ -149,7 +153,7 @@ final case class ContainersPage(
         response =>
           parse(response.body).flatMap(_.as[List[Container]]) match {
             case Right(containers) => ContainerRemoved(containers)
-            case Left(thr) => ContainersPage.Error(thr.getMessage)
+            case Left(thr)         => ContainersPage.Error(thr.getMessage)
           },
         error => ContainersPage.Error(error.toString)
       )
