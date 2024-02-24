@@ -3,16 +3,23 @@ package in.oss.docker.manager.cli
 import cats.effect.IO
 import in.oss.docker.manager.domain.*
 import in.oss.docker.manager.errors.DockerShellError.{
+  ContainerStatusError,
   GetContainersError,
   GetImagesError,
-  ContainerStatusError,
   UnavailableContainer
 }
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 import weaver.SimpleIOSuite
 
 object DockerCLISpec extends SimpleIOSuite {
 
+  given logger: Logger[IO] = Slf4jLogger.getLogger[IO]
+
   val unit: Unit = ()
+
+  val containerID            = "587e8f1c0dcb"
+  val getStopContainerOutput = "587e8f1c0dcb\n"
 
   val getContainersCommandOutput: String =
     """CONTAINER ID   IMAGE                      COMMAND                  CREATED       STATUS                    PORTS                                       NAMES              SIZE
@@ -59,6 +66,28 @@ object DockerCLISpec extends SimpleIOSuite {
     Image(Repository("demo"), Tag("latest"), ImageID("4c679f69d306"), Created("12 days ago"), Size("303MB"))
   )
 
+  test("It should be able to list all containers") {
+    val stub = new CommandExecutor[IO] {
+      override def execute(command: Seq[String]): IO[String] = IO(getContainersCommandOutput)
+    }
+
+    val service = DockerCLI.impl[IO](stub)
+    for {
+      result <- service.getContainers
+    } yield expect(result == containers)
+  }
+
+  test("It should be able to list all images") {
+    val stub = new CommandExecutor[IO] {
+      override def execute(command: Seq[String]): IO[String] = IO(getImagesCommandOutput)
+    }
+
+    val service = DockerCLI.impl[IO](stub)
+    for {
+      result <- service.getImages
+    } yield expect(result == images)
+  }
+  
   test("It should be able to get all containers") {
     val result = DockerCLI.extractGetContainersResult[IO](getContainersCommandOutput)
     result.map(containers => expect(containers == containers))
