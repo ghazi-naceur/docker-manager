@@ -4,12 +4,11 @@ import cats.*
 import cats.effect.*
 import cats.implicits.*
 import in.oss.docker.manager.cli.DockerCLI
-import io.circe.*
+import in.oss.docker.manager.errors.DockerShellError.DockerFailure
 import io.circe.generic.auto.*
+import org.http4s.circe.CirceEntityCodec.*
 import org.http4s.*
 import org.http4s.dsl.*
-import org.http4s.circe.CirceEntityCodec.*
-import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 
 class DockerController[F[_]: Async](dockerCLI: DockerCLI[F]) extends Http4sDsl[F] {
@@ -18,7 +17,7 @@ class DockerController[F[_]: Async](dockerCLI: DockerCLI[F]) extends Http4sDsl[F
     dockerCLI.getContainers
       .flatMap(Ok(_))
       .recoverWith { case thr =>
-        InternalServerError(thr.getMessage)
+        InternalServerError(DockerFailure(thr.getMessage))
       }
   }
 
@@ -26,7 +25,7 @@ class DockerController[F[_]: Async](dockerCLI: DockerCLI[F]) extends Http4sDsl[F
     dockerCLI.getImages
       .flatMap(Ok(_))
       .recoverWith { case thr =>
-        InternalServerError(thr.getMessage)
+        InternalServerError(DockerFailure(thr.getMessage))
       }
   }
 
@@ -35,7 +34,7 @@ class DockerController[F[_]: Async](dockerCLI: DockerCLI[F]) extends Http4sDsl[F
       .stopContainer(containerID)
       .flatMap(Ok(_))
       .recoverWith { case thr =>
-        InternalServerError(thr.getMessage)
+        InternalServerError(DockerFailure(thr.getMessage))
       }
   }
 
@@ -44,7 +43,7 @@ class DockerController[F[_]: Async](dockerCLI: DockerCLI[F]) extends Http4sDsl[F
       .startContainer(containerID)
       .flatMap(Ok(_))
       .recoverWith { case thr =>
-        InternalServerError(thr.getMessage)
+        InternalServerError(DockerFailure(thr.getMessage))
       }
   }
 
@@ -53,7 +52,7 @@ class DockerController[F[_]: Async](dockerCLI: DockerCLI[F]) extends Http4sDsl[F
       .removeContainer(containerID)
       .flatMap(Ok(_))
       .recoverWith { case thr =>
-        InternalServerError(thr.getMessage)
+        InternalServerError(DockerFailure(thr.getMessage))
       }
   }
 

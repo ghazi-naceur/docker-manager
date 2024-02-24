@@ -100,8 +100,16 @@ final case class ContainersPage(
           }).toList
         )
       ),
-      div(`class` := "col-md-11")(label(errorMessage))
+      displayError
     )
+  }
+
+  private def displayError = {
+    if (errorMessage.nonEmpty)
+      div(`class` := "card col-md-11 mt-3 text-center text-danger")(
+        div(`class` := "card-body")(errorMessage)
+      )
+    else div()
   }
 
   private def getContainersEndpoint: Cmd[IO, Message] = {
@@ -153,11 +161,18 @@ final case class ContainersPage(
         response =>
           parse(response.body).flatMap(_.as[List[Container]]) match {
             case Right(containers) => ContainerRemoved(containers)
-            case Left(thr)         => ContainersPage.Error(thr.getMessage)
+            case Left(thr)         => parseError(response)
           },
         error => ContainersPage.Error(error.toString)
       )
     )
+  }
+
+  private def parseError(response: Response): Error = {
+    parse(response.body).flatMap(_.hcursor.get[String]("error")) match {
+      case Right(errorFromServer) => ContainersPage.Error(errorFromServer)
+      case Left(error)            => ContainersPage.Error(s"Error occurred: '$error'")
+    }
   }
 }
 

@@ -7,6 +7,7 @@ import in.oss.docker.manager.errors.DockerShellError.{
   ContainerStatusError,
   GetContainersError,
   GetImagesError,
+  IrremovableContainer,
   UnavailableContainer
 }
 import org.typelevel.log4cats.Logger
@@ -57,12 +58,15 @@ object DockerCLI {
       } yield startedContainer
 
     override def removeContainer(containerID: String): F[List[Container]] =
-      for {
+      (for {
         _             <- Logger[F].info(s"Removing container '$containerID': 'docker rm $containerID'")
         commandOutput <- commandExecutor.execute(Seq("docker", "rm", containerID))
         _             <- checkContainerStatusResult(containerID, commandOutput)
         containers    <- getContainers
-      } yield containers
+      } yield containers).adaptError {
+        case thr if thr.getMessage.contains("Stop the container before attempting removal or force remove") =>
+          IrremovableContainer(containerID)
+      }
   }
 
   def getContainer[F[_]: Async](containerID: String, containers: List[Container]): F[Container] = {

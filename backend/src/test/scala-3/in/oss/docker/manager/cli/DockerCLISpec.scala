@@ -18,9 +18,6 @@ object DockerCLISpec extends SimpleIOSuite {
 
   val unit: Unit = ()
 
-  val containerID            = "587e8f1c0dcb"
-  val getStopContainerOutput = "587e8f1c0dcb\n"
-
   val getContainersCommandOutput: String =
     """CONTAINER ID   IMAGE                      COMMAND                  CREATED       STATUS                    PORTS                                       NAMES              SIZE
       |587e8f1c0dcb   data-highway-app:v0.6-rc   "java -cp /app/jar/d…"   4 days ago    Exited (143) 4 days ago                                               bungee-gum         2.63kB (virtual 792MB)
@@ -87,7 +84,7 @@ object DockerCLISpec extends SimpleIOSuite {
       result <- service.getImages
     } yield expect(result == images)
   }
-  
+
   test("It should be able to get all containers") {
     val result = DockerCLI.extractGetContainersResult[IO](getContainersCommandOutput)
     result.map(containers => expect(containers == containers))
