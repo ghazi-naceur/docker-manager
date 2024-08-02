@@ -4,9 +4,6 @@ val scala3Version = "3.4.0-RC4"
 
 ThisBuild / scalaVersion := scala3Version
 
-lazy val tyrianVersion     = "0.6.1"
-lazy val fs2DomVersion     = "0.1.0"
-lazy val laikaVersion      = "0.19.0"
 lazy val circeVersion      = "0.14.5"
 lazy val catsEffectVersion = "3.5.0"
 lazy val http4sVersion     = "0.23.19"
@@ -36,9 +33,6 @@ lazy val frontend = (project in file("frontend"))
     name         := "frontend",
     scalaVersion := scala3Version,
     libraryDependencies ++= Seq(
-      "io.indigoengine" %%% "tyrian-io"  % tyrianVersion,
-      "com.armanbilge"  %%% "fs2-dom"    % fs2DomVersion,
-      "org.planet42"    %%% "laika-core" % laikaVersion
     ),
     scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule) },
     semanticdbEnabled := true,
