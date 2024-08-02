@@ -4,6 +4,8 @@ val scala3Version = "3.4.0-RC4"
 
 ThisBuild / scalaVersion := scala3Version
 
+lazy val scalaJsDomVersion = "2.8.0"
+lazy val laminarVersion    = "17.0.0"
 lazy val circeVersion      = "0.14.5"
 lazy val catsEffectVersion = "3.5.0"
 lazy val http4sVersion     = "0.23.19"
@@ -33,7 +35,10 @@ lazy val frontend = (project in file("frontend"))
     name         := "frontend",
     scalaVersion := scala3Version,
     libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
+      "com.raquo"    %%% "laminar"     % laminarVersion
     ),
+    scalaJSUseMainModuleInitializer := true,
     scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule) },
     semanticdbEnabled := true,
     autoAPIMappings   := true
