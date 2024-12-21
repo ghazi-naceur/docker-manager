@@ -35,13 +35,13 @@ lazy val frontend = (project in file("frontend"))
     name         := "frontend",
     scalaVersion := scala3Version,
     libraryDependencies ++= Seq(
-      "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
-      "com.raquo"    %%% "laminar"     % laminarVersion
+      "io.frontroute" %%% "frontroute" % "0.18.1"
     ),
     scalaJSUseMainModuleInitializer := true,
     scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule) },
     semanticdbEnabled := true,
-    autoAPIMappings   := true
+    autoAPIMappings   := true,
+    Compile / mainClass := Some("in.oss.docker.manager.fe.App")
   )
   .dependsOn(common.js)
 
