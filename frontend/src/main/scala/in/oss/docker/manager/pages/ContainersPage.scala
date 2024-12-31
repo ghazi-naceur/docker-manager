@@ -31,6 +31,32 @@ object ContainersPage {
         }
     }
 
+    def handleStopContainer(containerId: String): Unit = {
+      AjaxStream
+        .put(s"http://localhost:6543/docker/container/$containerId/stop")
+        .foreach { xhr =>
+          parse(xhr.responseText).flatMap(_.as[Container]) match {
+            case Right(container) =>
+              console.info(s"Container $containerId stopped")
+              fetchContainers()
+            case Left(thr) => console.error("Error parsing JSON:", thr.getMessage)
+          }
+        }(new OneTimeOwner(() => ()))
+    }
+
+    def handleStartContainer(containerId: String): Unit = {
+      AjaxStream
+        .put(s"http://localhost:6543/docker/container/$containerId/start")
+        .foreach { xhr =>
+          parse(xhr.responseText).flatMap(_.as[Container]) match {
+            case Right(container) =>
+              console.info(s"Container $containerId started")
+              fetchContainers()
+            case Left(thr) => console.error("Error parsing JSON:", thr.getMessage)
+          }
+        }(new OneTimeOwner(() => ()))
+    }
+
     // Call fetchContainers when the page is loaded
     fetchContainers()
 
@@ -100,27 +126,5 @@ object ContainersPage {
         )
       )
     )
-  }
-
-  def handleStopContainer(containerId: String): Unit = {
-    AjaxStream
-      .put(s"http://localhost:6543/docker/container/$containerId/stop")
-      .foreach { xhr =>
-        parse(xhr.responseText).flatMap(_.as[Container]) match {
-          case Right(container) => console.info(s"Container $containerId stopped")
-          case Left(thr)        => console.error("Error parsing JSON:", thr.getMessage)
-        }
-      }(new OneTimeOwner(() => ()))
-  }
-
-  def handleStartContainer(containerId: String): Unit = {
-    AjaxStream
-      .put(s"http://localhost:6543/docker/container/$containerId/start")
-      .foreach { xhr =>
-        parse(xhr.responseText).flatMap(_.as[Container]) match {
-          case Right(container) => console.info(s"Container $containerId started")
-          case Left(thr)        => console.error("Error parsing JSON:", thr.getMessage)
-        }
-      }(new OneTimeOwner(() => ()))
   }
 }
