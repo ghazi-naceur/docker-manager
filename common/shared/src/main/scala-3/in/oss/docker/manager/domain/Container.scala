@@ -1,4 +1,4 @@
-package in.oss.docker.manager.domain
+ package in.oss.docker.manager.domain
 
 case class Container(
     containerId: ContainerID,

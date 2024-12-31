@@ -41,7 +41,7 @@ lazy val frontend = (project in file("frontend"))
     scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule) },
     semanticdbEnabled := true,
     autoAPIMappings   := true,
-    Compile / mainClass := Some("in.oss.docker.manager.fe.App")
+    Compile / mainClass := Some("in.oss.docker.manager.App")
   )
   .dependsOn(common.js)
 
