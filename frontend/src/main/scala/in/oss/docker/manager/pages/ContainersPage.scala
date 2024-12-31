@@ -57,6 +57,19 @@ object ContainersPage {
         }(new OneTimeOwner(() => ()))
     }
 
+    def handleRemoveContainer(containerId: String): Unit = {
+      AjaxStream
+        .delete(s"http://localhost:6543/docker/container/$containerId")
+        .foreach { xhr =>
+          parse(xhr.responseText).flatMap(_.as[List[Container]]) match {
+            case Right(containers) =>
+              console.info(s"Container $containerId removed")
+              containersVar.set(containers)
+            case Left(thr) => console.error("Error parsing JSON:", thr.getMessage)
+          }
+        }(new OneTimeOwner(() => ()))
+    }
+
     // Call fetchContainers when the page is loaded
     fetchContainers()
 
@@ -115,6 +128,11 @@ object ContainersPage {
                           cls := "dropdown-item",
                           onClick --> (_ => handleStartContainer(container.containerId.value)),
                           "Start"
+                        ),
+                        a(
+                          cls := "dropdown-item",
+                          onClick --> (_ => handleRemoveContainer(container.containerId.value)),
+                          "Remove"
                         )
                       )
                     )
