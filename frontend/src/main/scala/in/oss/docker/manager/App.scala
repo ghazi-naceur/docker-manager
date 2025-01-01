@@ -4,7 +4,8 @@ import com.raquo.airstream.ownership.OneTimeOwner
 import com.raquo.airstream.timing.PeriodicStream
 import com.raquo.laminar.api.L.{*, given}
 import com.raquo.laminar.nodes.ReactiveHtmlElement
-import in.oss.docker.manager.pages.ContainersPage
+import frontroute.LinkHandler
+import in.oss.docker.manager.pages.{ContainersPage, Router}
 import org.scalajs.dom
 import org.scalajs.dom.HTMLDivElement
 
@@ -15,9 +16,11 @@ object App {
   def main(args: Array[String]): Unit = {
     val containerNode = dom.document.querySelector("#app")
 
+    val router = div(Router()).amend(LinkHandler.bind)
+    
     render(
       containerNode,
-      ContainersPage()
+      router
     )
   }
 }
