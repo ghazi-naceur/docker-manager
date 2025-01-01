@@ -16,6 +16,9 @@ object Router {
           (pathEnd | path("containers")) {
             ContainersPage()
           },
+          path("images") {
+            ImagesPage()
+          },
           noneMatched {
             NotFoundPage()
           }

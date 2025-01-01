@@ -39,6 +39,15 @@ object NavBar {
                 href         := "/containers",
                 "Containers"
               )
+            ),
+            li(
+              cls := "nav-item",
+              a(
+                cls          := "nav-link active",
+                aria.current := "page",
+                href         := "/images",
+                "Images"
+              )
             )
           )
         )
