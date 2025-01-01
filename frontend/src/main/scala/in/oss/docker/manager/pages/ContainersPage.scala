@@ -75,7 +75,6 @@ object ContainersPage {
 
     div(
       div(
-        cls := "col-md-11",
         div(h2("Containers list")),
         table(
           cls := "table",
