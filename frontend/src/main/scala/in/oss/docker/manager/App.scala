@@ -16,11 +16,11 @@ object App {
 
   def main(args: Array[String]): Unit = {
     val containerNode = dom.document.querySelector("#app")
-
+    val backendHost   = "http://localhost:6543"
     val router: ReactiveHtmlElement[HTMLDivElement] =
       div(
         NavBar(),
-        Router()
+        Router(backendHost)
       ).amend(LinkHandler.bind)
 
     render(

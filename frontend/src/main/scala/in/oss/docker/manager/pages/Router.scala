@@ -8,16 +8,16 @@ import org.scalajs.dom.HTMLElement
 
 object Router {
 
-  def apply(): ReactiveHtmlElement[HTMLElement] =
+  def apply(backendHost: String): ReactiveHtmlElement[HTMLElement] =
     mainTag(
       routes(
         div(
           cls := "container-fluid",
           (pathEnd | path("containers")) {
-            ContainersPage()
+            ContainersPage(backendHost)
           },
           path("images") {
-            ImagesPage()
+            ImagesPage(backendHost)
           },
           noneMatched {
             NotFoundPage()

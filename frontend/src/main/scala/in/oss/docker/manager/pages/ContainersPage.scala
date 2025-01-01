@@ -15,12 +15,12 @@ import scala.scalajs.js
 
 object ContainersPage {
 
-  def apply(): ReactiveHtmlElement[HTMLDivElement] = {
+  def apply(backendHost: String): ReactiveHtmlElement[HTMLDivElement] = {
     val containersVar = Var(List.empty[Container])
 
     def fetchContainers(): Unit = {
       AjaxStream
-        .get("http://localhost:6543/docker/containers")
+        .get(s"$backendHost/docker/containers")
         .foreach { xhr =>
           parse(xhr.responseText).flatMap(_.as[List[Container]]) match {
             case Right(containers) => containersVar.set(containers)
@@ -31,7 +31,7 @@ object ContainersPage {
 
     def handleStopContainer(containerId: String): Unit = {
       AjaxStream
-        .put(s"http://localhost:6543/docker/container/$containerId/stop")
+        .put(s"$backendHost/docker/container/$containerId/stop")
         .foreach { xhr =>
           parse(xhr.responseText).flatMap(_.as[Container]) match {
             case Right(container) =>
@@ -44,7 +44,7 @@ object ContainersPage {
 
     def handleStartContainer(containerId: String): Unit = {
       AjaxStream
-        .put(s"http://localhost:6543/docker/container/$containerId/start")
+        .put(s"$backendHost/docker/container/$containerId/start")
         .foreach { xhr =>
           parse(xhr.responseText).flatMap(_.as[Container]) match {
             case Right(container) =>
@@ -57,7 +57,7 @@ object ContainersPage {
 
     def handleRemoveContainer(containerId: String): Unit = {
       AjaxStream
-        .delete(s"http://localhost:6543/docker/container/$containerId")
+        .delete(s"$backendHost/docker/container/$containerId")
         .foreach { xhr =>
           parse(xhr.responseText).flatMap(_.as[List[Container]]) match {
             case Right(containers) =>

@@ -11,12 +11,12 @@ import org.scalajs.dom.{HTMLDivElement, console}
 
 object ImagesPage {
 
-  def apply(): ReactiveHtmlElement[HTMLDivElement] = {
+  def apply(backendHost: String): ReactiveHtmlElement[HTMLDivElement] = {
     val imagesVar = Var(List.empty[DomainImage])
 
     def fetchImages(): Unit = {
       AjaxStream
-        .get("http://localhost:6543/docker/images")
+        .get(s"$backendHost/docker/images")
         .foreach { xhr =>
           parse(xhr.responseText).flatMap(_.as[List[DomainImage]]) match {
             case Right(images) => imagesVar.set(images)
