@@ -12,7 +12,9 @@ import org.scalajs.dom.{HTMLDivElement, console}
 object ImagesPage {
 
   def apply(backendHost: String): ReactiveHtmlElement[HTMLDivElement] = {
-    val imagesVar = Var(List.empty[DomainImage])
+    val imagesVar      = Var(List.empty[DomainImage])
+    val currentPageVar = Var(1)
+    val itemsPerPage   = 10
 
     def fetchImages(): Unit = {
       AjaxStream
@@ -26,6 +28,16 @@ object ImagesPage {
     }
 
     fetchImages()
+
+    def paginatedImages(images: List[DomainImage], page: Int, itemsPerPage: Int): List[DomainImage] = {
+      val from = (page - 1) * itemsPerPage
+      val to   = from + itemsPerPage
+      images.slice(from, to)
+    }
+
+    def totalPages(images: List[DomainImage], itemsPerPage: Int): Int = {
+      Math.ceil(images.size.toDouble / itemsPerPage).toInt
+    }
 
     div(
       div(h2("Images list")),
@@ -41,14 +53,34 @@ object ImagesPage {
           )
         ),
         tbody(
-          children <-- imagesVar.signal.map { images =>
-            images.map { image =>
+          children <-- imagesVar.signal.combineWith(currentPageVar.signal).map { case (images, currentPage) =>
+            paginatedImages(images, currentPage, itemsPerPage).map { image =>
               tr(
                 td(cls := "align-middle", image.repository.value),
                 td(cls := "align-middle", image.tag.value),
                 td(cls := "align-middle", image.imageId.value),
                 td(cls := "align-middle", image.created.value),
                 td(cls := "align-middle", image.size.value)
+              )
+            }
+          }
+        )
+      ),
+      div(
+        cls := "pagination",
+        ul(
+          cls := "pagination",
+          children <-- imagesVar.signal.combineWith(currentPageVar.signal).map { case (images, currentPage) =>
+            val total = totalPages(images, itemsPerPage)
+            (1 to total).map { page =>
+              li(
+                cls := s"page-item ${if (page == currentPage) "active" else ""}",
+                a(
+                  cls  := "page-link",
+                  href := "#",
+                  onClick.preventDefault.mapTo(page) --> currentPageVar.writer,
+                  page.toString
+                )
               )
             }
           }
