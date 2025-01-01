@@ -1,4 +1,8 @@
 
+### Prerequisites
+- JDK 21
+- SBT 1.10.7
+
 ### Run locally
 
 1- Run backend:
