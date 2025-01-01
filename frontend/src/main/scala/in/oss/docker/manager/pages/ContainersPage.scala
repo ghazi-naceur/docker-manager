@@ -16,7 +16,9 @@ import scala.scalajs.js
 object ContainersPage {
 
   def apply(backendHost: String): ReactiveHtmlElement[HTMLDivElement] = {
-    val containersVar = Var(List.empty[Container])
+    val containersVar  = Var(List.empty[Container])
+    val currentPageVar = Var(1)
+    val itemsPerPage   = 5
 
     def fetchContainers(): Unit = {
       AjaxStream
@@ -68,6 +70,16 @@ object ContainersPage {
         }(new OneTimeOwner(() => ()))
     }
 
+    def paginatedContainers(containers: List[Container], page: Int, itemsPerPage: Int): List[Container] = {
+      val from = (page - 1) * itemsPerPage
+      val to   = from + itemsPerPage
+      containers.slice(from, to)
+    }
+
+    def totalPages(containers: List[Container], itemsPerPage: Int): Int = {
+      Math.ceil(containers.size.toDouble / itemsPerPage).toInt
+    }
+
     // Call fetchContainers when the page is loaded
     fetchContainers()
 
@@ -90,8 +102,8 @@ object ContainersPage {
             )
           ),
           tbody(
-            children <-- containersVar.signal.map { containers =>
-              containers.map { container =>
+            children <-- containersVar.signal.combineWith(currentPageVar.signal).map { case (containers, currentPage) =>
+              paginatedContainers(containers, currentPage, itemsPerPage).map { container =>
                 tr(
                   td(cls := "align-middle", container.containerId.value),
                   td(cls := "align-middle", container.imageName.value),
@@ -133,6 +145,26 @@ object ContainersPage {
                         )
                       )
                     )
+                  )
+                )
+              }
+            }
+          )
+        ),
+        div(
+          cls := "pagination",
+          ul(
+            cls := "pagination",
+            children <-- containersVar.signal.combineWith(currentPageVar.signal).map { case (containers, currentPage) =>
+              val total = totalPages(containers, itemsPerPage)
+              (1 to total).map { page =>
+                li(
+                  cls := s"page-item ${if (page == currentPage) "active" else ""}",
+                  a(
+                    cls  := "page-link",
+                    href := "#",
+                    onClick.preventDefault.mapTo(page) --> currentPageVar.writer,
+                    page.toString
                   )
                 )
               }
