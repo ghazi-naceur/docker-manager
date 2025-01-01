@@ -39,8 +39,8 @@ lazy val frontend = (project in file("frontend"))
     ),
     scalaJSUseMainModuleInitializer := true,
     scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule) },
-    semanticdbEnabled := true,
-    autoAPIMappings   := true,
+    semanticdbEnabled   := true,
+    autoAPIMappings     := true,
     Compile / mainClass := Some("in.oss.docker.manager.App")
   )
   .dependsOn(common.js)
@@ -62,7 +62,7 @@ lazy val backend = (project in file("backend"))
       "org.typelevel"         %% "log4cats-noop"       % log4catsVersion % Test,
       "com.disneystreaming"   %% "weaver-cats"         % weaverVersion   % Test
     ),
-    Compile / mainClass := Some("in.io.docker.manager.Main")
+    Compile / mainClass := Some("in.oss.docker.manager.Main")
   )
   .dependsOn(common.jvm)
 

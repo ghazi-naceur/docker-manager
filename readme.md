@@ -1,17 +1,33 @@
 
 ### Run locally
-1- Under base root:
+
+1- Run backend:
+
+You can run the main class `Main.scala` under `backend/src/main/scala-3/in/oss/docker/manager`, or you use the sbt command for that:
 ```shell
+cd docker-manager
+sbt backend/clean cleanFiles compile
+sbt backend/run
+```
+
+1- Run frontend:
+
+a- Build:
+```shell
+cd docker-manager
 sbt fastOptJS
 ```
 or 
 ```shell
+cd docker-manager
+sbt
 project frontend
 ~fastOptJS
 ```
 
-2- Under `frontend`:
+b- Run:
 ```shell
+cd docker-manager/frontend
 npm install
 npm run start
 ```
