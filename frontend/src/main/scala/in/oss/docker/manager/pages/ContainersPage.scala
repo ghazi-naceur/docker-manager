@@ -19,16 +19,14 @@ object ContainersPage {
     val containersVar = Var(List.empty[Container])
 
     def fetchContainers(): Unit = {
-      Fetch
-        .fetch("http://localhost:6543/docker/containers")
-        .toFuture
-        .flatMap(_.text().toFuture)
-        .foreach { responseText =>
-          parse(responseText).flatMap(_.as[List[Container]]) match {
+      AjaxStream
+        .get("http://localhost:6543/docker/containers")
+        .foreach { xhr =>
+          parse(xhr.responseText).flatMap(_.as[List[Container]]) match {
             case Right(containers) => containersVar.set(containers)
             case Left(thr)         => console.error("Error parsing JSON:", thr.getMessage)
           }
-        }
+        }(new OneTimeOwner(() => ()))
     }
 
     def handleStopContainer(containerId: String): Unit = {
