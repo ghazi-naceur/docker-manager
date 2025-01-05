@@ -1,4 +1,7 @@
- package in.oss.docker.manager.domain
+package in.oss.docker.manager.domain
+
+import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import io.circe.{Decoder, Encoder}
 
 case class Container(
     containerId: ContainerID,
@@ -12,6 +15,10 @@ case class Container(
 )
 
 object Container {
+
+  given Encoder[Container] = deriveEncoder
+  given Decoder[Container] = deriveDecoder
+
   val containerFields: List[String] = List(
     ContainerID.fieldName,
     ImageName.fieldName,

@@ -9,7 +9,6 @@ import org.scalajs.dom
 import org.scalajs.dom.{HTMLDivElement, console}
 
 import io.circe.parser.*
-import io.circe.generic.auto.*
 
 object ContainersPage {
 
@@ -27,7 +26,7 @@ object ContainersPage {
           None
         }
         .foreach { xhr =>
-          parse(xhr.responseText).flatMap(_.as[List[Container]]) match {
+          decode[List[Container]](xhr.responseText) match {
             case Right(containers) => containersVar.set(containers)
             case Left(thr)         => console.error("Error parsing JSON:", thr.getMessage)
           }
@@ -43,7 +42,7 @@ object ContainersPage {
           None
         }
         .foreach { xhr =>
-          parse(xhr.responseText).flatMap(_.as[Container]) match {
+          decode[Container](xhr.responseText) match {
             case Right(container) =>
               console.info(s"Container $containerId stopped")
               fetchContainers()
@@ -61,7 +60,7 @@ object ContainersPage {
           None
         }
         .foreach { xhr =>
-          parse(xhr.responseText).flatMap(_.as[Container]) match {
+          decode[Container](xhr.responseText) match {
             case Right(container) =>
               console.info(s"Container $containerId started")
               fetchContainers()
@@ -79,7 +78,7 @@ object ContainersPage {
           None
         }
         .foreach { xhr =>
-          parse(xhr.responseText).flatMap(_.as[List[Container]]) match {
+          decode[List[Container]](xhr.responseText) match {
             case Right(containers) =>
               console.info(s"Container $containerId removed")
               containersVar.set(containers)

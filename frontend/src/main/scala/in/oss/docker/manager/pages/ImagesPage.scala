@@ -6,8 +6,6 @@ import com.raquo.laminar.nodes.ReactiveHtmlElement
 import in.oss.docker.manager.components.Notification
 import in.oss.docker.manager.domain.Image as DomainImage
 import io.circe.parser.*
-import io.circe.generic.auto.*
-import io.circe.parser.parse
 import org.scalajs.dom.{HTMLDivElement, console}
 
 object ImagesPage {
@@ -26,7 +24,7 @@ object ImagesPage {
           None
         }
         .foreach { xhr =>
-          parse(xhr.responseText).flatMap(_.as[List[DomainImage]]) match {
+          decode[List[DomainImage]](xhr.responseText) match {
             case Right(images) => imagesVar.set(images)
             case Left(thr)     => console.error("Error parsing JSON:", thr.getMessage)
           }
