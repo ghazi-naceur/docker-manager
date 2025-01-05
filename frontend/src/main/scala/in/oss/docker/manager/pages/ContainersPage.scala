@@ -1,17 +1,15 @@
 package in.oss.docker.manager.pages
 
 import com.raquo.airstream.ownership.OneTimeOwner
-import com.raquo.laminar.api.L.{*, given}
+import com.raquo.laminar.api.L.*
 import com.raquo.laminar.nodes.ReactiveHtmlElement
 import in.oss.docker.manager.domain.*
+import in.oss.docker.manager.components.Notification
 import org.scalajs.dom
-import org.scalajs.dom.{Fetch, HTMLDivElement, console}
+import org.scalajs.dom.{HTMLDivElement, console}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import io.circe.parser.*
 import io.circe.generic.auto.*
-
-import scala.scalajs.js
 
 object ContainersPage {
 
@@ -23,6 +21,11 @@ object ContainersPage {
     def fetchContainers(): Unit = {
       AjaxStream
         .get(s"$backendHost/docker/containers")
+        .recover { case thr: Throwable =>
+          console.log(s"Failed to fetch containers: ${thr.getMessage}")
+          Notification.storeError(s"Failed to fetch containers: ${thr.getMessage}")
+          None
+        }
         .foreach { xhr =>
           parse(xhr.responseText).flatMap(_.as[List[Container]]) match {
             case Right(containers) => containersVar.set(containers)
@@ -34,6 +37,11 @@ object ContainersPage {
     def handleStopContainer(containerId: String): Unit = {
       AjaxStream
         .put(s"$backendHost/docker/container/$containerId/stop")
+        .recover { case thr: Throwable =>
+          console.log(s"Failed to stop container '$containerId': ${thr.getMessage}")
+          Notification.storeError(s"Failed to stop container '$containerId': ${thr.getMessage}")
+          None
+        }
         .foreach { xhr =>
           parse(xhr.responseText).flatMap(_.as[Container]) match {
             case Right(container) =>
@@ -47,6 +55,11 @@ object ContainersPage {
     def handleStartContainer(containerId: String): Unit = {
       AjaxStream
         .put(s"$backendHost/docker/container/$containerId/start")
+        .recover { case thr: Throwable =>
+          console.log(s"Failed to start container '$containerId': ${thr.getMessage}")
+          Notification.storeError(s"Failed to start container '$containerId': ${thr.getMessage}")
+          None
+        }
         .foreach { xhr =>
           parse(xhr.responseText).flatMap(_.as[Container]) match {
             case Right(container) =>
@@ -60,6 +73,11 @@ object ContainersPage {
     def handleRemoveContainer(containerId: String): Unit = {
       AjaxStream
         .delete(s"$backendHost/docker/container/$containerId")
+        .recover { case thr: Throwable =>
+          console.log(s"Failed to remove container '$containerId': ${thr.getMessage}")
+          Notification.storeError(s"Failed to remove container '$containerId': ${thr.getMessage}")
+          None
+        }
         .foreach { xhr =>
           parse(xhr.responseText).flatMap(_.as[List[Container]]) match {
             case Right(containers) =>
@@ -86,6 +104,7 @@ object ContainersPage {
     div(
       div(
         div(h2("Containers list")),
+        Notification.display(),
         table(
           cls := "table",
           thead(

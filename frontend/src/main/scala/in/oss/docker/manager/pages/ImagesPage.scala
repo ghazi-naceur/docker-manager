@@ -1,8 +1,9 @@
 package in.oss.docker.manager.pages
 
 import com.raquo.airstream.ownership.OneTimeOwner
-import com.raquo.laminar.api.L.{*, given}
+import com.raquo.laminar.api.L.*
 import com.raquo.laminar.nodes.ReactiveHtmlElement
+import in.oss.docker.manager.components.Notification
 import in.oss.docker.manager.domain.Image as DomainImage
 import io.circe.parser.*
 import io.circe.generic.auto.*
@@ -19,6 +20,11 @@ object ImagesPage {
     def fetchImages(): Unit = {
       AjaxStream
         .get(s"$backendHost/docker/images")
+        .recover { case thr: Throwable =>
+          console.log(s"Failed to fetch images: ${thr.getMessage}")
+          Notification.storeError(s"Failed to fetch images: ${thr.getMessage}")
+          None
+        }
         .foreach { xhr =>
           parse(xhr.responseText).flatMap(_.as[List[DomainImage]]) match {
             case Right(images) => imagesVar.set(images)
@@ -41,6 +47,7 @@ object ImagesPage {
 
     div(
       div(h2("Images list")),
+      Notification.display(),
       table(
         cls := "table",
         thead(
