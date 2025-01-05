@@ -19,10 +19,5 @@ object DockerShellError {
 
   case class UnavailableContainer(containerID: String) extends Throwable(s"Container '$containerID' is not available")
 
-  case class IrremovableContainer(containerID: String)
-      extends Throwable(
-        s"It is recommended to stop the container '$containerID' before attempting to remove it, as it's still running."
-      )
-
   case class DockerFailure(error: String)
 }
